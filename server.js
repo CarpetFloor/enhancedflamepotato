@@ -1,13 +1,9 @@
-// THE TAB SPACING IS 2 SPACES, NOT 4! I DON'T WANT TO FIX IT ALL!
-/*
-cd ~/Desktop/Other/Games/'Flame Potato'; node server.js
-cd C:\Users\dylan\Desktop\'Flame Potato'; node server.js
-*/
+// tab space might still be 2, or maybe a combination of 2 and 4
 
-// I have no idea what like all of this does and how it works
-// Socket.IO getting started coming in clutch!
-
-// DON'T PUT ANY INTERVALS HERE
+const mapSize = 64;
+const mapMultiplier = 20;
+const w = mapSize * mapMultiplier;
+const h = mapSize * Math.floor(mapMultiplier * 0.65)
 
 const { createSocket } = require('dgram');
 const express = require('express');
@@ -24,30 +20,365 @@ app.get('/', (req, res) => {
 });
 
 function User(id) {
-  this.id = id;
-  this.lobby = "0";// 0 is main lobby players are in when not playing a game
-  this.x = 0;
-  this.y = 0;
-  this.lastx = 0;
-  this.dirx = 0;
-  this.diry = 0;
-  this.animationFrame = -1;
-  // this.dashPressed = false;
-  // this.hasSentData = false;
-}
+  this.id = id,
+  this.skin = -1,
+  this.lobby = "0", // 0 is main lobby players are in when not playing a game
+  this.maxSkins = 4,
+  this.rows = 4,
+  this.cols = 8,
+  this.animationFrame = 0,
+  this.maxAnimationFrame = 3,
+  this.animationWaitFrame = 0,
+  this.maxAnimationWaitFrame = 2,
+  this.x = w / 2,
+  this.y = h / 2,
+  this.width = 64,
+  this.height = 80,
+  this.diry = 0,
+  this.dirx = 0,
+  this.lastx = 1,// for setting correct frame direction
+  /*if player stops moving right away after pressing dash
+  then dash will stop because player dirx and/ or diry are 0
+  so this ensures that the player will do the full dash after
+  pressing dash even if they stop moving because the dash
+  will be based off of direction they are facing when pressing
+  the dash button*/
+  this.dashDirx = 0,
+  this.dashDiry = 0,
+  this.canMovex = true,
+  this.canMoveY = true,
+  this.speed = 17,
+  this.dashPressed = false,
+  this.canDash = true,
+  this.dashMultiplier = 4,
+  this.dashFrame = 0,
+  this.maxDashFrame = 8,
+  this.dashWaitFrame = 0,
+  this.maxDashWaitFrame = fps * 5,
+  // right, bottom-right, bottom, bottom-left, left, top-left, top, top-right
+  this.lastDir = 0,
+  this.hasSentData = false,
+  this.setUp = function() {
+      this.dashWaitFrame = this.maxDashWaitFrame;
+  },
+  this.processInput = function() {
+      // dash
+      // only allow dash if moving
+      // don't need to check if not mobile because when mobile,
+      // dashPressed is never set to true
+      if(this.dashPressed) {
+          if(this.dashFrame == 0) {
+              this.canDash = false;
+              this.dashWaitFrame = 0;
+              // with more players dash stuff here
+              switch(clientId) {
+                  case 0:
+                      dashEffectR0.beginPath();
+                      dashEffectR0.moveTo(this.x, this.y);
+                      dashEffectR0.lineTo(this.x, this.y);
+                      break;
+                  case 1:
+                      dashEffectR1.beginPath();
+                      dashEffectR1.moveTo(this.x, this.y);
+                      dashEffectR1.lineTo(this.x, this.y);
+                      break;
+                  case 2:
+                      dashEffectR2.beginPath();
+                      dashEffectR2.moveTo(this.x, this.y);
+                      dashEffectR2.lineTo(this.x, this.y);
+                      break;
+                  case 3:
+                      dashEffectR3.beginPath();
+                      dashEffectR3.moveTo(this.x, this.y);
+                      dashEffectR3.lineTo(this.x, this.y);
+                      break;
+              }
+          }
+
+          //dashEffectR.moveTo(this.x, this.y);
+          
+          // diagonal dash
+          // needs to be normalized
+          // and only allow movement on one axis if
+          // at the border on the other axis
+          if(!mobile) {
+              if(this.dashDirx != 0 && this.dashDiry != 0) {
+                  if(this.canMovex) {
+                      this.x += 
+                      (this.speed / (Math.sqrt(Math.pow(this.speed, 2) + 
+                      Math.pow(this.speed, 2)))) * this.speed * this.dashMultiplier 
+                      * this.dashDirx;
+                  }
+                  if(this.canMovey) {
+                      this.y += 
+                      (this.speed / (Math.sqrt(Math.pow(this.speed, 2) + 
+                      Math.pow(this.speed, 2)))) * this.speed * this.dashMultiplier 
+                      * this.dashDiry;
+                  }
+              }
+              // left or right
+              else if(this.dashDirx != 0) {
+                  if(this.canMovex)
+                      this.x += this.speed * this.dashMultiplier * this.dashDirx;
+              }
+              else if(this.dashDiry != 0) {
+                  if(this.canMovey)
+                      this.y += this.speed * this.dashMultiplier * this.dashDiry; 
+              }
+          }
+          else {
+              if(this.canMovex)
+                  this.x += joystickData.movex * this.dashMultiplier;
+              if(this.canMovey)
+                  this.y += joystickData.movey * this.dashMultiplier;
+          }
+
+          // dash move effect
+          // with more players dash stuff here
+          switch(clientId) {
+              case 0:
+                  dashEffectR0.lineTo(this.x, this.y);
+                  dashEffectR0.stroke();
+                  break;
+              case 1:
+                  dashEffectR1.lineTo(this.x, this.y);
+                  dashEffectR1.stroke();
+                  break;
+              case 2:
+                  dashEffectR2.lineTo(this.x, this.y);
+                  dashEffectR2.stroke();
+                  break;
+              case 3:
+                  dashEffectR3.lineTo(this.x, this.y);
+                  dashEffectR3.stroke();
+                  break;
+          }
+
+          // change counter for how many frames in dash
+          // and then if reached max frames stop dash
+          ++this.dashFrame;
+          if(this.dashFrame >= this.maxDashFrame) {
+              this.dashPressed = false;
+              this.dashFrame = 0;
+
+              // clear dash move effect
+              // with more players dash stuff here
+              switch(clientId) {
+                  case 0:
+                      dashEffectR0.clearRect(0, 0, w, h);
+                      break;
+                  case 1:
+                      dashEffectR1.clearRect(0, 0, w, h);
+                      break;
+                  case 2:
+                      dashEffectR2.clearRect(0, 0, w, h);
+                      break;
+                  case 3:
+                      dashEffectR3.clearRect(0, 0, w, h);
+                      break;
+              }
+          }
+      }
+      // when dash is not occuring, increase frame counter for how
+      // wait until dash can occur again
+      else if(this.dashWaitFrame < this.maxDashWaitFrame) {
+          ++this.dashWaitFrame;
+
+          // reached max amount of wait frames
+          if(this.dashWaitFrame >= this.maxDashWaitFrame)
+              this.canDash = true;
+      }
+
+      let margin = 10;
+      if(mobile) {
+          if(joystickData.movex > 0)
+              this.dirx = 1;
+          if(joystickData.movex < 0)
+              this.dirx = -1;
+          if(joystickData.movey > 0)
+              this.diry = 1;
+          if(joystickData.movey < 0)
+              this.diry = -1;
+      }
+      
+      // don't allow movement past screen border
+      // x
+      if(this.x > margin && this.x < w + margin) {
+          this.canMovex = true;
+      }
+      else if(this.x <= margin && this.dirx == 1) {
+          this.canMovex = true;
+      }
+      else if((this.x >= w - margin) && this.dirx == -1) {
+          this.canMovex = true;
+      }
+      else
+          this.canMovex = false;
+      
+      // y
+      if(this.y > margin && this.y < h + margin) {
+          this.canMovey = true;
+      }
+      else if(this.y <= margin && this.diry == 1) {
+          this.canMovey = true; 
+      }
+      else if((this.y >= h - margin) && this.diry == -1) {
+          this.canMovey = true;
+      }
+      else
+          this.canMovey = false;
+
+      if(!mobile) {
+          // actual movement of player
+          // diagonal
+          if(this.dirx != 0 && this.diry != 0) {
+              if(this.canMovex)
+                  this.x += this.dirx * 
+                  (this.speed / (Math.sqrt(Math.pow(this.speed, 2) + 
+                  Math.pow(this.speed, 2)))) * this.speed;
+              if(this.canMovey)
+                  this.y += this.diry * 
+                  (this.speed / (Math.sqrt(Math.pow(this.speed, 2) + 
+                  Math.pow(this.speed, 2)))) * this.speed;
+          }
+          // not diagonal
+          else {
+              if(this.canMovex)
+                  this.x += this.dirx * this.speed;
+              if(this.canMovey)
+                  this.y += this.diry * this.speed;
+          }
+      }
+      else {
+          if(this.canMovex)
+              this.x += joystickData.movex;
+          if(this.canMovey)
+              this.y += joystickData.movey;
+      }
+
+      // if player ever gets outside of the screen, move player back in
+      if(this.x < margin)
+          this.x = margin * 2;
+      if(this.x > w - margin)
+          this.x = w - (margin * 2);
+      if(this.y < margin)
+          this.y = margin * 2;
+      if(this.y > h - margin)
+          this.y = h - (margin * 2);
+  }
+};
 
 function Potato() {
-  this.player = -1,
   this.x = 0,
   this.y = 0,
-  this.attached = false
-}
+  this.dir = 1,
+  this.size = 60,
+  this.yOffset = 30,
+  this.player = -1,
+  this.attached = false,
+  this.threw = false,
+  this.canBeThrown = true,
+  this.throwx = 1,
+  this.throwFrame = 0,
+  this.maxThrowFrame = 5,
+  this.throwSpeed = 150,
+  this.mouseThrowx = 0,// the mouse x position when clicked to throw
+  this.mouseThrowy = 0,// the mouse y position when clicked to throw
+  this.throwMovex = 0,// how much to move each frame on x axis during throw
+  this.throwMovey = 0,// how much to move each frame on y axis during throw
+  this.movement = function() {
+      // when attached to a player
+      if(this.attached) {
+          this.dir = players[this.player].lastx;
+          this.x = players[this.player].x + ((this.dir == -1) ? -25 : 25);
+          this.y = players[this.player].y + 35;
+
+          // possibly check for pass to other player here
+      }
+      // when throw missed and on the ground only allow
+      // player who throw potato to pick it back up
+      else if (this.canBeThrown){ 
+          if(inCollision(this.x, this.y, 
+          players[this.player].x, players[this.player].y)) {
+              this.attached = true;
+          }
+      }
+
+      // throw
+      if(this.threw) {
+          // set initial throw data stuff
+          if(this.throwFrame == 0) {
+              this.attached = false;
+              this.canBeThrown = false;
+
+              this.mouseThrowx = lastMousex;
+              this.mouseThrowy = lastMousey;
+
+              let distx = Math.abs(this.x - this.mouseThrowx);
+              let disty = Math.abs(this.y - this.mouseThrowy);
+
+              let theta = Math.atan(disty / distx);
+
+              this.throwMovex = (Math.cos(theta) * this.throwSpeed);
+              this.throwMovey = (Math.sin(theta) * this.throwSpeed);
+
+              //the remainder of the stuff to set the correct throwMovex and 
+              // throw throwMovey is probably not the best way of doing it
+              // but I'm dumb and don't know how else to do it
+              // positive/ negative only wors when player is above and to the
+              // left of the mouse, so this correctly sets it
+              if(this.mouseThrowx < this.x)
+                  this.throwMovex *= -1;
+              if(this.mouseThrowy < this.y)
+                  this.throwMovey *= -1;
+          }
+
+          // actually move potato when being thrown
+          this.x += this.throwMovex;
+          this.y += this.throwMovey;
+
+          // check for pass to other player here
+          for(let i = 0; i < players.length; i++) {
+              if(players[i].id != id) {
+                  if(inCollision(this.x, this.y, 
+                  players[i].x, players[i].y)) {
+                      this.player = i;
+                      this.attached = true;
+                      this.threw = false;
+                      this.canBeThrown = true;// for if client
+                      // gets potato again they will be able to
+                      // throw it
+                      recentlyPassed = true;
+                  }
+              }
+          }
+
+          ++this.throwFrame;
+          if(this.throwFrame >= this.maxThrowFrame) {
+              this.throwFrame = 0;
+              this.threw = false;
+              this.canBeThrown = true;
+          }
+      }
+
+      // if potato ever gets outside of the screen, move potato back in
+      if(this.x < 0)
+          this.x = 0;
+      if(this.x > w)
+          this.x = w;
+      if(this.y < 0)
+          this.y = 0;
+      if(this.y > h)
+          this.y = h;
+  }
+};
 
 let users = [];
+let potatos = ["potato"];
 let lobbies = [[]];
 let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
-let startWait = 1500;
+let startWait = 500;
 let fps = 30;
 
 io.on('connection', (socket) => {
@@ -70,8 +401,10 @@ io.on('connection', (socket) => {
     // remove disconnected player from lobbies array
     // if else because removeFromLobby removes that lobby array
     // if it is empty, but main lobby array never is removed
-    if(lobbyRemovePos > 0)
+    if(lobbyRemovePos > 0) {
       removeFromLobby(id);
+      potatos.splice(lobbyRemovePos, 1);
+    }
     else {
       for(let i = 0; i <= lobbies[lobbyRemovePos].length - 1; i++) {
         if(lobbies[lobbyRemovePos][i].id == id) {
@@ -207,39 +540,65 @@ io.on('connection', (socket) => {
     // is already checked when trying to join lobby
     if(lobbies[lobby].length > 1 && !(lobbiesInGame.includes(lobby))) {
       lobbiesInGame.push(lobby);
-      io.to(lobby.toString()).emit("game started", gameStartData(lobby));
+      potatos.push(new Potato);
+      io.to(lobby.toString()).emit("game started", gameMapData(lobby));
     }
   });
 
   socket.on("next round", (lobby) => {
-    io.to(lobby.toString()).emit("game started", gameStartData(lobby));
-  })
+    io.to(lobby.toString()).emit("game started", gameMapData(lobby));
+  });
 
-  // server is receiving data from a client
-  socket.on("send client data", (client, lobby, potatoData, frame) => {
-    let newPotatoData = new Potato;
-    if(potatoData != "nothing") {
-      newPotatoData.player = potatoData.player;
-      newPotatoData.x = potatoData.x;
-      newPotatoData.y = potatoData.y;
-      newPotatoData.attached = potatoData.attached;
-    }
-
-    for(let i = 0; i < lobbies[lobby].length; i++) {
-       if(lobbies[lobby][i].id == client.id) {
-        lobbies[lobby][i].x = client.x;
-        lobbies[lobby][i].y = client.y;
-        lobbies[lobby][i].lastx = client.lastx;
-        lobbies[lobby][i].dirx = client.dirx;
-        lobbies[lobby][i].diry = client.diry;
-        lobbies[lobby][i].animationFrame = client.animationFrame;
-      }
-    }
-
-    io.to(lobby.toString()).emit("send server data", lobbies[lobby], 
-      (potatoData != "nothing") ? newPotatoData : "nothing", 
-      frame);
-  })
+  // // client letting server know a key/ input was pressed
+  // socket.on("playerPressed", (pressed, id) => {
+  //   // don't allow player to change direction after game over
+  //   // when explosion animation is playing
+  //   // AND for some reason removeEventListener doesn't work
+  //   if(pressed == "left") {
+  //     lobbies[clientId].dirx = -1;
+  //     // incase switch back to no mouse controls
+  //     // players[clientId].lastx = -1;
+  //     players[clientId].lastDir = 4;
+  //   }
+  //   if((e.keyCode == "68" || e.keyCode == "39") && !over) {
+  //       players[clientId].dirx = 1;
+  //       // incase switch back to no mouse controls
+  //       // players[clientId].lastx = 1;
+  //       players[clientId].lastDir = 0;
+  //   }
+  //   if((e.keyCode == "87" || e.keyCode == "38") && !over) {
+  //       players[clientId].diry = -1;
+  //       players[clientId].lastDir = 6;
+  //   }
+  //   if((e.keyCode == "83" || e.keyCode == "40") && !over) {
+  //       players[clientId].diry = 1;
+  //       players[clientId].lastDir = 2;
+  //   }
+  //   // only allow dash if moving
+  //   // and don't have to check to see if the game is still running
+  //   // because function doesn't change player last dir or lastx
+  //   if(e.keyCode == "32" && players[clientId].canDash && 
+  //   (players[clientId].dirx != 0 || players[clientId].diry != 0)) {
+  //       players[clientId].dashDirx = players[clientId].dirx;
+  //       players[clientId].dashDiry = players[clientId].diry;
+  //       players[clientId].dashPressed = true;
+  //   }
+  //   // if player moving diagonally, set last dir to be diagonal
+  //   if((players[clientId].dirx != 0 && players[clientId].diry != 0) && !over) {
+  //       if(players[clientId].dirx == 1) {
+  //           if(players[clientId].diry == 1)
+  //               players[clientId].lastDir = 1;
+  //           else
+  //               players[clientId].lastDir = 7;
+  //       }
+  //       else {
+  //           if(players[clientId].diry == 1)
+  //               players[clientId].lastDir = 3;
+  //           else
+  //               players[clientId].lastDir = 5;
+  //       }
+  //   }
+  // });
 });
 
 http.listen(process.env.PORT || port, () => {
@@ -315,30 +674,24 @@ function touching(fromX, fromY, toX, toY) {
 }
 
 // contains all data for each client to set up the game
-function gameStartData(lobby) {
-    let mapSize = 64;
-    let mapMultiplier = 20;
+function gameMapData(lobby) {
+    // set skins of each client
+    for(let i = 0; i < lobbies[lobby].length; i++) {
+        lobbies[lobby][i].skin = i;
+    }
+
 
     let data = {
         map: {
             size: mapSize,
             data: []
         },
-
         canvas: {
-            mapMultiplier: 20,
-            w: mapSize * mapMultiplier,
-            h: mapSize * Math.floor(mapMultiplier * 0.65),
+            w: w,
+            h: h,
         },
-
-        players: {
-          ids: [],
-          pos: []
-        },
-        
-        potatoPlyayerId: "",
-        fps: fps,
         startWait: startWait,
+        clients: lobbies[lobby]
     };
     
     // generate map
@@ -370,14 +723,11 @@ function gameStartData(lobby) {
     let border = 200;
     for(let i = 0; i < lobbies[lobby].length; i++) {
         // don't check for if too close to another player with first player
-        if(data.players.ids.length < 1) {
-            let x = Math.floor((Math.random() * (data.canvas.w - border)) + 
+        if(i == 0) {
+          lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) + 
             border);
-            let y = Math.floor((Math.random() * (data.canvas.h - border)) + 
+          lobbies[lobby][0].y = Math.floor((Math.random() * (data.canvas.h - border)) + 
             border);
-
-            data.players.ids.push(lobbies[lobby][0].id);
-            data.players.pos.push([x, y]);
         }
         else {
             let generateAgain = true;
@@ -391,22 +741,21 @@ function gameStartData(lobby) {
 
                 // check if too close to eaach other player with pos
                 generateAgain = false;
-                for(let j = 0; j < data.players.ids.length; j++) {
+                for(let j = 0; j < lobbies[lobby].length; j++) {
                     if(touching(x, y, 
-                    data.players.pos[j][0], 
-                    data.players.pos[j][1]))
+                    lobbies[lobby][j].x, 
+                    lobbies[lobby][j].y))
                         generateAgain = true;
                 }
             }
 
-            data.players.ids.push(lobbies[lobby][i].id);
-            data.players.pos.push([x, y]);
+            lobbies[lobby][0].x = x;
+            lobbies[lobby][0].y = y;
         }
     }
 
     // set who starts with the potato
-    data.potatoPlyayerId = data.players.ids[Math.floor(
-      Math.random() * data.players.ids.length)];
+    potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
 
     return data;
 }
