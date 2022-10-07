@@ -1,0 +1,15 @@
+(!)==high priority
+[==FILES==]
+
+[==CSS==]
+
+[==GAME==]
+-Sometimes player input does not work properly when pressing buttons fast
+-Sometimes player can end up past borders, but when moving at all, they get
+    teleported back to the edge of the border(s), so maybe it isn't that
+    much of an issue, except for the fact that they can throw potato from
+    outside of the border, however that wouldn't give the player an advantage
+
+[==MULTIPLAYER==]
+-When another client has the potato, the potato is drawn underneath that client
+(!)-Sometimes the potato ground text is drawn and keeps drawing at a player

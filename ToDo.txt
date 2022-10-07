@@ -1,0 +1,3 @@
+-Maybe try to fix lag, but it might be more of a hosting thing
+-Make sure game over text is positioned correctly on mobile and non-mobile devices
+-Reopen tab error(s)

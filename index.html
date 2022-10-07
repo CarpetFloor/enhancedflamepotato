@@ -1,0 +1,138 @@
+<!--
+    NOTE: To make pixel art not blurry and large enough, increase the sprite size
+    in Aseprite with Nearest-Neighbor
+
+    Assets Used:
+    -Colors: https://htmlcolorcodes.com/color-chart/
+    -Players: https://0x72.itch.io/16x16-dungeon-tileset
+    -Potato: https://henrysoftware.itch.io/pixel-food
+    -Explosion: https://nyknck.itch.io/explosion
+    -Font: https://fonts.google.com/specimen/Press+Start+2P?category=Display,Monospace#standard-styles
+    -Skill Icons: https://pixerelia.itch.io/vas-basic-spells-and-buffs
+    -Map: https://o-lobster.itch.io/simple-dungeon-crawler-16x16-pixel-pack
+    -Text Icons: https://coolsymbol.com/
+    -Mobile Control Buttons: https://kenney.nl/assets/onscreen-controls
+    -Mobile Joystick: https://github.com/bobboteck/JoyStick
+
+    Help Used:
+    -Mouse pos: https://stackoverflow.com/questions/43853119/javascript-wrong-mouse-position-when-drawing-on-canvas
+    -Test for mobile: https://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device
+    -Check for mobile orientation: https://stackoverflow.com/questions/4917664/detect-viewport-orientation-if-orientation-is-portrait-display-alert-message-ad
+    -CSS put divs in corner of div: https://stackoverflow.com/questions/20840935/put-4-divs-children-in-the-corners-of-the-parent
+    -CSS hide number input buttons: https://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-input-s-spin-box
+    -Mobile touch pos: (Domenico) https://stackoverflow.com/questions/41993176/determine-touch-position-on-tablets-with-javascript
+    -Proper mobile viewport: https://stackoverflow.com/questions/24806050/fit-fixed-width-into-mobile-device-viewport
+    -CSS center absolute element: https://stackoverflow.com/questions/18147642/css-centering-absolute-positioned-text-inside-relative-parent
+    -CSS align text in input: https://stackoverflow.com/questions/12114570/how-to-align-texts-inside-of-an-input
+-->
+<!--THIS IS ONE BIG FILE!-->
+<!--well, at least for me. I have not made anything bigger than small before-->
+
+<!--
+    for some reason button clicking IS ONLY DETECTED when inside of a div with the CLASS menu
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Flame Potato</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!--for font-->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="style.css">
+
+        <!--Socket.IO-->
+        <script src="/socket.io/socket.io.js"></script>
+
+        <!--jQuery-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+        <!--mobile joystick-->
+        <script src="joy.js"></script>
+    </head>
+    <body>
+        <!--div so that the canvas can be centered vertically-->
+        <div id="layers">
+            <!--multiple canvases so that the map only has to be
+                drawn once, and doesn't have to be redrawn every frame-->
+            <!--UI isn't on a separate canvas because the time remaining
+                is updated every frame, and if the player is constantly dashing
+                then the dash ui is updated almost every frame-->
+            <canvas id="mapCanvas"></canvas>
+            <canvas id="dashEffect0"></canvas>
+            <canvas id="dashEffect1"></canvas>
+            <canvas id="dashEffect2"></canvas>
+            <canvas id="dashEffect3"></canvas>
+            <canvas id="mainCanvas"></canvas>
+        </div>
+
+        <p id="noticeText">Game loading...</p>
+        <p id="gameOverText">You Got Potato'd!</p>
+        <p id="potatoGroundText">Player0 dropped the potato</p>
+
+        <div class="menu" id="mainMenu">
+            <p id="menuTitle">Flame Potato</p>
+            <p id="menuSubText">V1.2.3 Why is there so much lag :|</p>
+            <button onclick="createLobby()" class="menuButton">Create Game</button>
+            <button onclick="joinLobbyMenu()" class="menuButton">Join Game</button>
+            <button onclick="settings()" class="menuButton">Settings</button>
+        </div>
+
+        <div class="menu" id="settings">
+            <p id="settingsText">So, um, yes. I don't actually have this "settings"
+                thing created yet. But don't worry, or maybe.
+                Because I was going to say that I might create this,
+                but I don't know if I actually will. Because, you know,
+                doing so would actually require something called "effort".
+                And yup, that is not an easy thing to find.
+            </p>
+            <button onclick="backToMainMenu()" class="menuButton">Main Menu</button>
+        </div>
+
+        <div class="menu" id="join">
+            <input id="joinInput" type="number" placeholder="gameID">
+            <div id="joinMenuButtons">
+                <button id="joinLobbyButton" onclick="joinLobby()" class="menuButton">
+                    Join</button>
+                <button id="lobbyMainMenuButton" onclick="backToMainMenu()" class="menuButton">
+                    Main Menu</button>
+            </div>
+            <p id="joinNotice">Note that you will only be able to join a valid game</p>
+        </div>
+
+        <div class="menu" id="lobby">
+            <div id="firstLobbyContainer" class="lobbyContainers">
+                <p id="gameId"></p>
+                <button onclick="tryToStartGame()" class="menuButton lobbyButtons" id="start">Start</button>
+                <button onclick="backToMainMenu()" class="menuButton lobbyButtons">Main Menu</button>
+            </div>
+            
+            <div id="b" class="lobbyContainers">
+                <div id="playerName">
+                    <p>You:</p>
+                    <p id="youName"></p>
+                </div>
+
+                <p id="lobbyTopText">Players</p>
+                <div id="lobbyPlayers"></div>
+            </div>
+        </div>
+
+        <div id="joystickContainer"></div>
+
+        <div class="menu" id="mobileDashContainer">
+            <img id="mobileDashImg" src="Assets/MobileDash.png">
+            <button id="mobileButtonsDash">.</button>
+        </div>
+
+        <script src="mobile.js"></script>
+
+        <!--menu and game-->
+        <!--I have no idea how to split them into separate files
+        because both files need to use Socket.IO-->
+        <script src="script.js"></script>
+    </body>
+</html>

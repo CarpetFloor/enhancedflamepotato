@@ -1,0 +1,181 @@
+/*disable double-tap zoom for mobile*/
+* {
+    touch-action: manipulation;
+    /*max-width: 100vw;
+    max-height: 100vh;*/
+}
+body {
+    background-color: black;
+    /*the follow disables text selection*/
+    display: flex;
+    justify-content: center;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /*disable scrolling and scroll bar.
+    everything is correctly sized on mobile and non-mobile
+    devices, but for some reason there is some HTML that
+    is larger than the screen size*/
+    /*I am so happy that this actually works*/
+    overflow: hidden;
+}
+.menu {
+    visibility: hidden;
+    position: absolute;
+    width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+}
+#mainMenu {
+    visibility: visible;
+}
+#settings {
+    visibility: hidden;
+}
+#menuTitle {
+    font-size: 120px;
+    font-weight: bold;
+    color: white;
+    margin-top: 2%;
+    margin-bottom: 0;
+}
+#menuSubText {
+    /*visibility: hidden;*/
+    color: white;
+    font-size: 20px;
+    margin-top: -20px;
+    margin-bottom: 5%;
+}
+.menuButton {
+    width: 300px;
+    height: 58px;
+    font-size: 50px;
+    margin-bottom: 15px;
+    border: none;
+}
+.menuButton:hover {
+    background-color: #F5B041;
+}
+#settingsText {
+    color: white;
+    font-size: 35px;
+    margin-top: 5%;
+}
+#joinInput {
+    border: none;
+    font-size: 50px; 
+    margin-top: 10%;
+    margin-bottom: 20px;
+    width: 300px;
+    text-align: center;
+    background-color: black;
+    border-bottom: 4px solid white;
+    color: #F5B041;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number] {
+    -moz-appearance:textfield;
+}
+#joinMenuButtons {
+    display: flex;
+    flex-direction: column;
+}
+#lobby {
+    color: white;
+    font-size: 35px;
+}
+.lobbyContainers {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#gameId {
+    margin-top:4%;
+    margin-bottom: 4%;
+}
+#start {
+    margin-top: 0;
+    background-color: #48C9B0;
+}
+#start:hover {
+    background-color: #A3E4D7;
+}
+#playerName {
+    width: 355px;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: -10px;
+}
+#lobbyTopText{
+    margin-top: 25px;
+    font-weight: 700;
+    border-bottom: 2px solid white;
+}
+#lobbyPlayers {
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+    align-items: center;
+    margin-top: -30px;
+}
+.playerList {
+    margin: 0;
+}
+#layers {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+p, button, input {
+    outline: none;
+    font-family: "VT323";   
+}
+#noticeText {
+    position: absolute;
+    visibility: hidden;
+    font-size: 100px;
+    color: white;
+    margin-top: 10%;
+}
+#gameOverText {
+    position: absolute;
+    width: 100%;
+    left: 0px;
+    text-align: center;
+    visibility: hidden;
+    font-size: 300px;
+    color: #F4D03F;
+    margin-top: 3%;
+    font-weight: bold;
+}
+canvas {
+    position: absolute;
+    image-rendering: optimizeSpeed;             
+    image-rendering: -moz-crisp-edges;          
+    image-rendering: -webkit-optimize-contrast; 
+    image-rendering: -o-crisp-edges;           
+    image-rendering: crisp-edges;             
+    -ms-interpolation-mode: nearest-neighbor;
+}
+#joystickContainer {
+    width: 150px;
+    height: 150px;
+}
+#mobileDashImg, #joystickContainer {
+    visibility: hidden;
+}

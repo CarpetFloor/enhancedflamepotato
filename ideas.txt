@@ -1,0 +1,6 @@
+Hot potatoe that is randomly given to player at start of round
+After certain time it explodes (possibly eliminate one player at a time until only 1 player)
+Can throw but if miss then lose (or maybe not), or can simply touch other player
+Can dash, but a bit of a cooldown
+Possibly abilities and items can randomly drop that can be used once or give a buff for a bit
+Possibly have the map have obstacles, and possibly have obstacles change or move or something similar
