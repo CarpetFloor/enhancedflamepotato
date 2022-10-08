@@ -375,6 +375,7 @@ function Potato() {
 
 let users = [];
 let potatos = ["potato"];
+let intervals = [[]]
 let lobbies = [[]];
 let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
@@ -404,6 +405,7 @@ io.on('connection', (socket) => {
     if(lobbyRemovePos > 0) {
       removeFromLobby(id);
       potatos.splice(lobbyRemovePos, 1);
+      intervals.splice(lobbyRemovePos, 1);
     }
     else {
       for(let i = 0; i <= lobbies[lobbyRemovePos].length - 1; i++) {
@@ -541,12 +543,22 @@ io.on('connection', (socket) => {
     if(lobbies[lobby].length > 1 && !(lobbiesInGame.includes(lobby))) {
       lobbiesInGame.push(lobby);
       potatos.push(new Potato);
+      let a;
+      lobbies.push(a);
       io.to(lobby.toString()).emit("game started", gameMapData(lobby));
+
+      setTimeout(() => {
+        setInterval(gameLoop, 1000 / fps, lobby);
+      }, startWait);
     }
   });
 
   socket.on("next round", (lobby) => {
     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
+
+    setTimeout(() => {
+      setInterval(gameLoop, 1000 / fps, lobby);
+    }, startWait);
   });
 
   // // client letting server know a key/ input was pressed
@@ -758,4 +770,8 @@ function gameMapData(lobby) {
     potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
 
     return data;
+}
+
+function gameLoop(lobby) {
+  console.log("game loop in lobby " + lobby);
 }
