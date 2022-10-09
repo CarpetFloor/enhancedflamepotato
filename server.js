@@ -53,14 +53,11 @@ function User(id) {
   this.dashMultiplier = 4,
   this.dashFrame = 0,
   this.maxDashFrame = 8,
-  this.dashWaitFrame = 0,
+  this.dashWaitFrame = fps * 5,
   this.maxDashWaitFrame = fps * 5,
   // right, bottom-right, bottom, bottom-left, left, top-left, top, top-right
   this.lastDir = 0,
   this.hasSentData = false,
-  this.setUp = function() {
-      this.dashWaitFrame = this.maxDashWaitFrame;
-  },
   this.processInput = function() {
       // dash
       // only allow dash if moving
@@ -373,10 +370,10 @@ function Potato() {
   }
 };
 
-let users = [];
-let potatos = ["potato"];
-let intervals = [[]]
-let lobbies = [[]];
+let users = [];// 
+let potatos = ["potato"];// contains data for the potato for each game
+let intervals = [[]];
+let lobbies = [[]];// contains data for each client
 let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
 let startWait = 500;
@@ -418,7 +415,9 @@ io.on('connection', (socket) => {
     // kick everyone in the lobby if game is running
     if(lobbiesInGame.includes(lobbyRemovePos)) {
       // kick clients from game
+      /* MAKE WORK
       io.to(lobbyRemovePos.toString()).emit("cancel game");
+      */
 
       // remove lobby from lobbiesInGame
       for(let i = 0; i < lobbiesInGame.length; i++) {
@@ -768,10 +767,49 @@ function gameMapData(lobby) {
 
     // set who starts with the potato
     potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
+    // set position of potato to position of the player who has it
+    potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
+    potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
 
     return data;
 }
 
+// object for holding data to send to each client to render a player
+function RenderPlayer() {
+  this.x = w + 10, 
+  this.y = h + 10, 
+  this.width = -1, 
+  this.height = -1, 
+  this.maxSkins = -1,
+  this.animationFrame = -1
+}
+
 function gameLoop(lobby) {
-  console.log("game loop in lobby " + lobby);
+  // process stuff
+
+  // render stuff
+
+  let renderData = {
+    players: [],
+    potato: {
+      x: potatos[lobby].x, 
+      y: potatos[lobby].y, 
+      dir: potatos[lobby].dir, 
+      size: potatos[lobby].size, 
+      yOffset: potatos[lobby].yOffset
+    }
+  }
+  
+  for(let i = 0; i < lobbies[lobby].length; i++) {
+    renderData.players.push(new RenderPlayer());
+
+    renderData.players[i].x = lobbies[lobby][i].x;
+    renderData.players[i].y = lobbies[lobby][i].y;
+    renderData.players[i].width = lobbies[lobby][i].width;
+    renderData.players[i].height = lobbies[lobby][i].height;
+    renderData.players[i].maxSkins = lobbies[lobby][i].maxSkins;
+    renderData.players[i].animationFrame = lobbies[lobby][i].animationFrame;
+  }
+
+  io.to(lobby.toString()).emit("server sending render data", (renderData));
 }

@@ -541,3 +541,52 @@ function startGame() {
 //         socket.emit("playerReleased", "down", id);
 
 // }
+
+socket.on("server sending render data", (data) => {
+    r.clearRect(0, 0, w, h);
+
+    // players
+    for(let i = 0; i < data.players.length; i++) {
+        showPlayer(data.players[i], i);
+    }
+
+    // potato
+    // offset different than from source
+    r.drawImage(
+        potatoImg, // img
+        (data.potato.dir == 1) ? 0 : data.potato.size, // clip x start
+        0, // clip y start
+        data.potato.size, // clip x end
+        data.potato.size, // clip y end
+        data.potato.x - ((data.potato.dir == -1) ? data.potato.size : 0), // x
+        data.potato.y, // y
+        data.potato.size, // width 
+        data.potato.size); // height
+});
+
+// make sure all img srcs are here
+let playerImg = new Image();
+playerImg.src = "Assets/Players.png";
+let potatoImg = new Image();
+potatoImg.src = "Assets/Potato.png";
+
+function showPlayer(player, playerIndex) {
+    let clipx = player.width * playerIndex;
+
+    if(player.lastx == -1) {
+        let move = player.maxSkins - playerIndex;
+        clipx += (move + (move - 1)) * player.width;
+    }
+    
+    r.drawImage(
+        playerImg,// image
+        clipx,// cliiping x start
+        player.animationFrame * player.height,// clipping y start
+        player.width,// width of clipping
+        player.height,// height of clipping
+        player.x - (player.width / 2),
+        player.y - (player.height / 2),
+        player.width,// width of image
+        player.height// height of image
+    );
+}
