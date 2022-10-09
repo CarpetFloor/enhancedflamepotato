@@ -1,4 +1,6 @@
 -Make it actually work
+-More player characters
+-More maps
 -Can change name
 -Spectator mode
 -Randomly moving barriers
