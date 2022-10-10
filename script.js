@@ -249,7 +249,7 @@ let map = {
         document.getElementById("noticeText").style.visibility = "hidden";
         mapLoaded = true;
         
-        // startGame();
+        startGame();
     }
 }; map.loadImage();
 
@@ -391,6 +391,12 @@ let explosion = {
 socket.on("game started", (init) => {
     console.log(init);
 
+    // set index for when sending data to server server will know who is sending stuff
+    for(let i = 0; i < init.clients.length; i++) {
+        if(init.clients[i].id == id)
+            index = i;
+    }
+
     document.getElementById("gameOverText").style.visibility = "hidden";
     document.getElementById("lobby").style.visibility = "hidden";
     document.getElementById("menuSubText").style.visibility = "hidden";
@@ -499,48 +505,44 @@ function startGame() {
     }
 }
 
-// /*
-// non mobile
-// key pressed
-// */
-// function press(e) {
-//     if((e.keyCode == "65" || e.keyCode == "37") && !over)
-//         socket.emit("playerPressed", "left", id);
+/*
+non mobile
+key pressed
+*/
+function press(e) {
+    if(e.keyCode == "65" || e.keyCode == "37")
+        socket.emit("player pressed", "left", lobby, index);
 
-//     if((e.keyCode == "68" || e.keyCode == "39") && !over)
-//         socket.emit("playerPressed", "right", id);
+    if(e.keyCode == "68" || e.keyCode == "39")
+        socket.emit("player pressed", "right", lobby, index);
 
-//     if((e.keyCode == "87" || e.keyCode == "38") && !over)
-//         socket.emit("playerPressed", "up", id);
+    if(e.keyCode == "87" || e.keyCode == "38")
+        socket.emit("player pressed", "up", lobby, index);
         
-//     if((e.keyCode == "83" || e.keyCode == "40") && !over)
-//         socket.emit("playerPressed", "down", id);
-//     // only allow dash if moving
-//     // and don't have to check to see if the game is still running
-//     // because function doesn't change player last dir or lastx
-//     if(e.keyCode == "32" && players[clientId].canDash && 
-//     (players[clientId].dirx != 0 || players[clientId].diry != 0))
-//         socket.emit("playerPressed", "dash", id);
-// }
+    if(e.keyCode == "83" || e.keyCode == "40")
+        socket.emit("player pressed", "down", lobby, index);
 
-// /*
-// non mobile
-// key released
-// */
-// function release(e) {
-//     if((e.keyCode == "65" || e.keyCode == "37") && players[clientId].dirx == -1)
-//         socket.emit("playerReleased", "left", id);
+    if(e.keyCode == "32" && players[clientId].canDash)
+        socket.emit("player pressed", "dash", lobby, index);
+}
 
-//     if((e.keyCode == "68" || e.keyCode == "39") && players[clientId].dirx == 1)
-//         socket.emit("playerReleased", "right", id);
+/*
+non mobile
+key released
+*/
+function release(e) {
+    if(e.keyCode == "65" || e.keyCode == "37")
+        socket.emit("player released", "left", lobby, index);
 
-//     if((e.keyCode == "87" || e.keyCode == "38") && players[clientId].diry == -1)
-//         socket.emit("playerReleased", "up", id);
+    if(e.keyCode == "68" || e.keyCode == "39")
+        socket.emit("player released", "right", lobby, index);
 
-//     if((e.keyCode == "83" || e.keyCode == "40") && players[clientId].diry == 1)
-//         socket.emit("playerReleased", "down", id);
+    if(e.keyCode == "87" || e.keyCode == "38")
+        socket.emit("player released", "up", lobby, index);
 
-// }
+    if(e.keyCode == "83" || e.keyCode == "40")
+        socket.emit("player released", "down", lobby, index);
+}
 
 socket.on("server sending render data", (data) => {
     r.clearRect(0, 0, w, h);

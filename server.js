@@ -372,7 +372,8 @@ function Potato() {
 
 let users = [];// 
 let potatos = ["potato"];// contains data for the potato for each game
-let intervals = [[]];
+let intervals = ["interval"];
+let overs = ["over"];// if the game is over
 let lobbies = [[]];// contains data for each client
 let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
@@ -543,11 +544,11 @@ io.on('connection', (socket) => {
       lobbiesInGame.push(lobby);
       potatos.push(new Potato);
       let a;
-      lobbies.push(a);
+      intervals.push(a);
       io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
       setTimeout(() => {
-        setInterval(gameLoop, 1000 / fps, lobby);
+        a = setInterval(gameLoop, 1000 / fps, lobby);
       }, startWait);
     }
   });
@@ -556,60 +557,74 @@ io.on('connection', (socket) => {
     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
     setTimeout(() => {
-      setInterval(gameLoop, 1000 / fps, lobby);
+      intervals[lobby] = setInterval(gameLoop, 1000 / fps, lobby);
     }, startWait);
   });
 
-  // // client letting server know a key/ input was pressed
-  // socket.on("playerPressed", (pressed, id) => {
-  //   // don't allow player to change direction after game over
-  //   // when explosion animation is playing
-  //   // AND for some reason removeEventListener doesn't work
-  //   if(pressed == "left") {
-  //     lobbies[clientId].dirx = -1;
-  //     // incase switch back to no mouse controls
-  //     // players[clientId].lastx = -1;
-  //     players[clientId].lastDir = 4;
-  //   }
-  //   if((e.keyCode == "68" || e.keyCode == "39") && !over) {
-  //       players[clientId].dirx = 1;
-  //       // incase switch back to no mouse controls
-  //       // players[clientId].lastx = 1;
-  //       players[clientId].lastDir = 0;
-  //   }
-  //   if((e.keyCode == "87" || e.keyCode == "38") && !over) {
-  //       players[clientId].diry = -1;
-  //       players[clientId].lastDir = 6;
-  //   }
-  //   if((e.keyCode == "83" || e.keyCode == "40") && !over) {
-  //       players[clientId].diry = 1;
-  //       players[clientId].lastDir = 2;
-  //   }
-  //   // only allow dash if moving
-  //   // and don't have to check to see if the game is still running
-  //   // because function doesn't change player last dir or lastx
-  //   if(e.keyCode == "32" && players[clientId].canDash && 
-  //   (players[clientId].dirx != 0 || players[clientId].diry != 0)) {
-  //       players[clientId].dashDirx = players[clientId].dirx;
-  //       players[clientId].dashDiry = players[clientId].diry;
-  //       players[clientId].dashPressed = true;
-  //   }
-  //   // if player moving diagonally, set last dir to be diagonal
-  //   if((players[clientId].dirx != 0 && players[clientId].diry != 0) && !over) {
-  //       if(players[clientId].dirx == 1) {
-  //           if(players[clientId].diry == 1)
-  //               players[clientId].lastDir = 1;
-  //           else
-  //               players[clientId].lastDir = 7;
-  //       }
-  //       else {
-  //           if(players[clientId].diry == 1)
-  //               players[clientId].lastDir = 3;
-  //           else
-  //               players[clientId].lastDir = 5;
-  //       }
-  //   }
-  // });
+  // client letting server know a key/ input was pressed
+  socket.on("player pressed", (pressed, lobby, index) => {
+      if(pressed == "left") {
+        lobbies[lobby][index].dirx = -1;
+      }
+
+      if((pressed == "right") && !overs[lobby]) {
+          lobbies[lobby][index].dirx = 1;
+      }
+
+      if((pressed == "up") && !overs[lobby]) {
+          lobbies[lobby][index].diry = -1;
+          lobbies[lobby][index].lastDir = 6;
+      }
+
+      if((pressed == "down") && !overs[lobby]) {
+          lobbies[lobby][index].diry = 1;
+          lobbies[lobby][index].lastDir = 2;
+      }
+
+      // only allow dash if moving
+      // and don't have to check to see if the game is still running
+      // because function doesn't change player last dir or lastx
+      if((pressed == "dash") && lobbies[lobby][index].canDash && 
+      (lobbies[lobby][index].dirx != 0 || lobbies[lobby][index].diry != 0)) {
+          lobbies[lobby][index].dashDirx = lobbies[lobby][index].dirx;
+          lobbies[lobby][index].dashDiry = lobbies[lobby][index].diry;
+          lobbies[lobby][index].dashPressed = true;
+      }
+      // if player moving diagonally, set last dir to be diagonal
+      if((lobbies[lobby][index].dirx != 0 && lobbies[lobby][index].diry != 0) && !overs[lobby]) {
+          if(lobbies[lobby][index].dirx == 1) {
+              if(lobbies[lobby][index].diry == 1)
+                  lobbies[lobby][index].lastDir = 1;
+              else
+                  lobbies[lobby][index].lastDir = 7;
+          }
+          else {
+              if(lobbies[lobby][index].diry == 1)
+                  lobbies[lobby][index].lastDir = 3;
+              else
+                  lobbies[lobby][index].lastDir = 5;
+          }
+      }
+  });
+
+  // client letting server know a key/ input was pressed
+  socket.on("player released", (released, lobby, index) => {
+      if((released == "left") && lobbies[lobby][index].dirx == -1) {
+          lobbies[lobby][index].dirx = 0;
+      }
+
+      if((released == "right") && lobbies[lobby][index].dirx == 1) {
+          lobbies[lobby][index].dirx = 0;
+      }
+
+      if((released == "up") && lobbies[lobby][index].diry == -1) {
+          lobbies[lobby][index].diry = 0;
+      }
+
+      if((released == "down") && lobbies[lobby][index].diry == 1) {
+          lobbies[lobby][index].diry = 0;
+      }
+  });
 });
 
 http.listen(process.env.PORT || port, () => {
@@ -785,6 +800,7 @@ function RenderPlayer() {
 }
 
 function gameLoop(lobby) {
+  console.log("loop");
   // process stuff
 
   // render stuff
