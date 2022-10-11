@@ -131,6 +131,8 @@ let w = -1;
 let h = -1;
 let playerColors = ["yellow", "lime", "cornflowerBlue", "red"];
 let playerNames = ["yellow", "green", "blue", "red"];
+let maxGameFrame = -1;
+let maxDashWaitFrame = -1;
 
 let ui = { 
     width: 112,
@@ -397,6 +399,9 @@ socket.on("game started", (init) => {
             index = i;
     }
 
+    maxGameFrame = init.maxGameFrame;
+    maxDashWaitFrame = init.maxDashWaitFrame;
+
     document.getElementById("gameOverText").style.visibility = "hidden";
     document.getElementById("lobby").style.visibility = "hidden";
     document.getElementById("menuSubText").style.visibility = "hidden";
@@ -437,8 +442,8 @@ socket.on("game started", (init) => {
     map.size = init.map.size; 
     map.mapData = init.map.data;
 
-    ui.potato.width = w / 2;
-    ui.dash.y = h - 130;
+    uiData.time.width = w / 2;
+    uiData.dash.y = h - 130;
 
     explosion.frame = 0;
 
@@ -489,14 +494,14 @@ function startGame() {
         document.addEventListener("keyup", release);
 
     // set the player and potato direction based off of the mouse
-    if(!mobile)
-        document.addEventListener("mousemove", mouseMoved);
+    // if(!mobile)
+    //     document.addEventListener("mousemove", mouseMoved);
     
     // detect click or tap for throwing the potato
-    if(!mobile)
-        document.getElementById("mainCanvas").addEventListener("mousedown", mouseDown);
-    else
-        document.getElementById("mainCanvas").addEventListener("touchstart", touched);
+    // if(!mobile)
+    //     document.getElementById("mainCanvas").addEventListener("mousedown", mouseDown);
+    // else
+    //     document.getElementById("mainCanvas").addEventListener("touchstart", touched);
 
     // show mobile controls
     if(mobile) {
@@ -544,7 +549,50 @@ function release(e) {
         socket.emit("player released", "down", lobby, index);
 }
 
+let playerImg = new Image();
+playerImg.src = "Assets/Players.png";
+let potatoImg = new Image();
+potatoImg.src = "Assets/Potato.png";
+let uiData = {
+    general: {
+        width: 112,
+        height: 112,
+        rows: 6,
+        cols: 8,
+        transparency: 0.8,
+    },
+    time: {
+        // no x becasue it is centered on screen based off of width
+        y: 30,
+        width: -1,
+        height: 70,
+        border: 15,// how much on x and y axes the border extends in pixels
+        bgcolor: "#641E16",
+        color: "#CD6155"
+    },
+    dash: {
+        x: 20,
+        y: -1,
+        frame: 16,
+    }
+}
+// object in case more stuff is added later on
+let uiImgs = {
+    dash: new Image()
+}
+uiImgs.dash.src = "Assets/Skills.png";
+
 socket.on("server sending render data", (data) => {
+    console.log("data received from server");
+    console.log(data);
+    console.log("here");
+    console.log(index);
+    console.log(data.players);
+    console.log(data.players[1]);
+    console.log(data.players[index]);
+    console.log("finally");
+    console.log(data.players[index].dashWaitFrame);
+
     r.clearRect(0, 0, w, h);
 
     // players
@@ -553,7 +601,7 @@ socket.on("server sending render data", (data) => {
     }
 
     // potato
-    // offset different than from source
+    // offset different than from source code
     r.drawImage(
         potatoImg, // img
         (data.potato.dir == 1) ? 0 : data.potato.size, // clip x start
@@ -564,13 +612,13 @@ socket.on("server sending render data", (data) => {
         data.potato.y, // y
         data.potato.size, // width 
         data.potato.size); // height
-});
+    
+    // ui time left
+    showUiTime(data.gameFrame);
 
-// make sure all img srcs are here
-let playerImg = new Image();
-playerImg.src = "Assets/Players.png";
-let potatoImg = new Image();
-potatoImg.src = "Assets/Potato.png";
+    // ui dash
+    showUiDash(data.players[index].dashWaitFrame);
+});
 
 function showPlayer(player, playerIndex) {
     let clipx = player.width * playerIndex;
@@ -591,4 +639,74 @@ function showPlayer(player, playerIndex) {
         player.width,// width of image
         player.height// height of image
     );
+}
+
+function showUiTime(frame) {
+    let borderx = (w / 2) - ((uiData.time.width + uiData.time.border) / 2);
+    let x = (w / 2) - (uiData.time.width / 2);
+    
+    // border
+    r.globalAlpha = uiData.general.transparency;
+    r.fillStyle = "black";
+    r.fillRect(borderx,
+        uiData.time.y - (uiData.time.border / 2),
+        uiData.time.width + uiData.time.border,
+        uiData.time.height + uiData.time.border);
+
+    // remaining time
+    r.fillStyle = uiData.time.bgcolor;
+    r.fillRect(x, uiData.time.y, uiData.time.width, uiData.time.height);
+
+    // elapsed time
+    r.fillStyle = uiData.time.color;
+    r.fillRect(x, uiData.time.y, 
+    (frame / maxGameFrame) * uiData.time.width,
+    uiData.time.height);
+    r.globalAlpha = 1;
+}
+
+function showUiDash(frame) {
+    console.log("please work");
+    console.log("frame " + frame);
+    console.log("max frame " + maxDashWaitFrame);
+
+    //border
+    r.globalAlpha = uiData.general.transparency;
+    r.fillStyle = "black";
+    r.fillRect(uiData.dash.x, uiData.dash.y, uiData.general.width, uiData.general.height);
+
+    // icon
+    r.drawImage(
+        uiImgs.dash,
+        (Math.floor(uiData.dash.frame / uiData.general.cols) +
+        (uiData.dash.frame % uiData.general.cols -
+        Math.floor(uiData.dash.frame / uiData.general.cols))) * uiData.general.width, 
+        (Math.floor(uiData.dash.frame / uiData.general.cols)) * uiData.general.height,
+        uiData.general.width,
+        uiData.general.height,
+        uiData.dash.x,
+        uiData.dash.y,
+        uiData.general.width,
+        uiData.general.height);
+
+    console.log("icon data");
+    console.log(uiImgs.dash);
+    console.log((Math.floor(uiData.general.frame / uiData.general.cols) +
+    (uiData.general.frame % uiData.general.cols -
+    Math.floor(uiData.general.frame / uiData.general.cols))) * uiData.general.width);
+    console.log((Math.floor(uiData.general.frame / uiData.general.cols)) * uiData.general.height);
+    console.log(uiData.general.width);
+    console.log(uiData.general.height);
+    console.log(uiData.dash.x);
+    console.log(uiData.dash.y);
+    console.log(uiData.general.width);
+    console.log(uiData.general.height);
+    
+    // overlay to show time remaining until usable
+    r.globalAlpha = uiData.general.transparency - 0.2;
+    r.fillRect(uiData.dash.x, uiData.dash.y, 
+        (maxDashWaitFrame - frame) * 
+        (uiData.general.width / maxDashWaitFrame),
+        uiData.general.height);
+    r.globalAlpha = 1;
 }

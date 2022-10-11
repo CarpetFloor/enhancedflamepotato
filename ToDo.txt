@@ -1,5 +1,5 @@
 LAST WORKING ON:
-
+-Trying to get dash UI to display
 
 -Make it actually work
 -More player characters

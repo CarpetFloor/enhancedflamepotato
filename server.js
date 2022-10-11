@@ -53,8 +53,7 @@ function User(id) {
   this.dashMultiplier = 4,
   this.dashFrame = 0,
   this.maxDashFrame = 8,
-  this.dashWaitFrame = fps * 5,
-  this.maxDashWaitFrame = fps * 5,
+  this.dashWaitFrame = maxDashWaitFrame,
   // right, bottom-right, bottom, bottom-left, left, top-left, top, top-right
   this.lastDir = 0,
   this.hasSentData = false,
@@ -370,15 +369,23 @@ function Potato() {
   }
 };
 
+
+
 let users = [];// 
 let potatos = ["potato"];// contains data for the potato for each game
 let intervals = ["interval"];
 let overs = ["over"];// if the game is over
+let gameFrames = ["game frame"];// what frame each game is on
+let maxGameFrames = ["max game frame"];// what max frame for each game is
+let uis = ["ui"];// contains objects that hold data and functions for ui stuff
 let lobbies = [[]];// contains data for each client
 let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
 let startWait = 500;
 let fps = 30;
+let gameLengthPerPlayer = 10;// in seconds
+let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
+let maxDashWaitFrame = fps * 5;
 
 io.on('connection', (socket) => {
   console.log(socket.id + " connected");
@@ -402,8 +409,6 @@ io.on('connection', (socket) => {
     // if it is empty, but main lobby array never is removed
     if(lobbyRemovePos > 0) {
       removeFromLobby(id);
-      potatos.splice(lobbyRemovePos, 1);
-      intervals.splice(lobbyRemovePos, 1);
     }
     else {
       for(let i = 0; i <= lobbies[lobbyRemovePos].length - 1; i++) {
@@ -424,6 +429,12 @@ io.on('connection', (socket) => {
       for(let i = 0; i < lobbiesInGame.length; i++) {
         if(lobbiesInGame[i] == lobbyRemovePos) {
           lobbiesInGame.splice(i, 1);
+          potatos.splice(i, 1);
+          intervals.splice(i, 1);
+          overs.splice(i, 1);
+          uis.splice(i, 1);
+          gameFrames.splice(i, 1);
+          maxGameFrames.splice(i, 1);
           break;
         }
       }
@@ -543,21 +554,35 @@ io.on('connection', (socket) => {
     if(lobbies[lobby].length > 1 && !(lobbiesInGame.includes(lobby))) {
       lobbiesInGame.push(lobby);
       potatos.push(new Potato);
-      let a;
-      intervals.push(a);
+      let interval;
+      intervals.push(interval);
+      overs.push(false);
+      gameFrames.push(0);
+      maxGameFrames.push(lobbies[lobby].length * fps * gameLengthPerPlayer);
+      uis.push();
+
       io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
       setTimeout(() => {
-        a = setInterval(gameLoop, 1000 / fps, lobby);
+        intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
       }, startWait);
     }
   });
 
   socket.on("next round", (lobby) => {
+    // FINISH
+    // reset stuff here
+    lobbiesInGame.push(lobby);
+    potatos.push(new Potato);
+    clearInterval(intervals[lobby]);
+    overs[lobby] = false;
+    gameFrames[lobby] = 0;
+    maxGameFrames[lobby] = lobbies[lobby].length * fps * gameLengthPerPlayer;
+
     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
     setTimeout(() => {
-      intervals[lobby] = setInterval(gameLoop, 1000 / fps, lobby);
+      intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
     }, startWait);
   });
 
@@ -708,6 +733,8 @@ function gameMapData(lobby) {
 
 
     let data = {
+        maxGameFrame: maxGameFrames[lobby],
+        maxDashWaitFrame: maxDashWaitFrame,
         map: {
             size: mapSize,
             data: []
@@ -796,16 +823,19 @@ function RenderPlayer() {
   this.width = -1, 
   this.height = -1, 
   this.maxSkins = -1,
-  this.animationFrame = -1
+  this.animationFrame = -1,
+  this.dashWaitFrame = -1
 }
 
 function gameLoop(lobby) {
-  console.log("loop");
   // process stuff
+  
+  ++gameFrames[lobby];
 
   // render stuff
 
   let renderData = {
+    gameFrame: gameFrames[lobby],
     players: [],
     potato: {
       x: potatos[lobby].x, 
@@ -825,7 +855,14 @@ function gameLoop(lobby) {
     renderData.players[i].height = lobbies[lobby][i].height;
     renderData.players[i].maxSkins = lobbies[lobby][i].maxSkins;
     renderData.players[i].animationFrame = lobbies[lobby][i].animationFrame;
+    renderData.players[i].dashWaitFrame = lobbies[lobby][i].dashWaitFrame;
   }
 
   io.to(lobby.toString()).emit("server sending render data", (renderData));
+
+  if(gameFrames[lobby] == maxGameFrames[lobby]) {
+    console.log("game over");
+
+    clearInterval(intervals[lobby]);
+  }
 }
