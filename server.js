@@ -20,6 +20,7 @@ app.get('/', (req, res) => {
 });
 
 function User(id) {
+  this.mobile = false
   this.id = id,
   this.skin = -1,
   this.lobby = "0", // 0 is main lobby players are in when not playing a game
@@ -47,13 +48,13 @@ function User(id) {
   this.dashDiry = 0,
   this.canMovex = true,
   this.canMoveY = true,
-  this.speed = 17,
+  this.speed = 23,
   this.dashPressed = false,
   this.canDash = true,
   this.dashMultiplier = 4,
   this.dashFrame = 0,
   this.maxDashFrame = 8,
-  this.dashWaitFrame = maxDashWaitFrame,
+  this.dashWaitFrame = maxDashWaitFrame,// global var because clients need value and this seemed easier
   // right, bottom-right, bottom, bottom-left, left, top-left, top, top-right
   this.lastDir = 0,
   this.hasSentData = false,
@@ -66,38 +67,15 @@ function User(id) {
           if(this.dashFrame == 0) {
               this.canDash = false;
               this.dashWaitFrame = 0;
-              // with more players dash stuff here
-              switch(clientId) {
-                  case 0:
-                      dashEffectR0.beginPath();
-                      dashEffectR0.moveTo(this.x, this.y);
-                      dashEffectR0.lineTo(this.x, this.y);
-                      break;
-                  case 1:
-                      dashEffectR1.beginPath();
-                      dashEffectR1.moveTo(this.x, this.y);
-                      dashEffectR1.lineTo(this.x, this.y);
-                      break;
-                  case 2:
-                      dashEffectR2.beginPath();
-                      dashEffectR2.moveTo(this.x, this.y);
-                      dashEffectR2.lineTo(this.x, this.y);
-                      break;
-                  case 3:
-                      dashEffectR3.beginPath();
-                      dashEffectR3.moveTo(this.x, this.y);
-                      dashEffectR3.lineTo(this.x, this.y);
-                      break;
-              }
           }
 
           //dashEffectR.moveTo(this.x, this.y);
           
-          // diagonal dash
-          // needs to be normalized
-          // and only allow movement on one axis if
-          // at the border on the other axis
-          if(!mobile) {
+          if(!this.mobile) {
+              // diagonal dash
+              // needs to be normalized
+              // and only allow movement on one axis if
+              // at the border on the other axis
               if(this.dashDirx != 0 && this.dashDiry != 0) {
                   if(this.canMovex) {
                       this.x += 
@@ -122,33 +100,12 @@ function User(id) {
                       this.y += this.speed * this.dashMultiplier * this.dashDiry; 
               }
           }
-          else {
-              if(this.canMovex)
-                  this.x += joystickData.movex * this.dashMultiplier;
-              if(this.canMovey)
-                  this.y += joystickData.movey * this.dashMultiplier;
-          }
-
-          // dash move effect
-          // with more players dash stuff here
-          switch(clientId) {
-              case 0:
-                  dashEffectR0.lineTo(this.x, this.y);
-                  dashEffectR0.stroke();
-                  break;
-              case 1:
-                  dashEffectR1.lineTo(this.x, this.y);
-                  dashEffectR1.stroke();
-                  break;
-              case 2:
-                  dashEffectR2.lineTo(this.x, this.y);
-                  dashEffectR2.stroke();
-                  break;
-              case 3:
-                  dashEffectR3.lineTo(this.x, this.y);
-                  dashEffectR3.stroke();
-                  break;
-          }
+          // else {
+          //     if(this.canMovex)
+          //         this.x += joystickData.movex * this.dashMultiplier;
+          //     if(this.canMovey)
+          //         this.y += joystickData.movey * this.dashMultiplier;
+          // }
 
           // change counter for how many frames in dash
           // and then if reached max frames stop dash
@@ -156,46 +113,29 @@ function User(id) {
           if(this.dashFrame >= this.maxDashFrame) {
               this.dashPressed = false;
               this.dashFrame = 0;
-
-              // clear dash move effect
-              // with more players dash stuff here
-              switch(clientId) {
-                  case 0:
-                      dashEffectR0.clearRect(0, 0, w, h);
-                      break;
-                  case 1:
-                      dashEffectR1.clearRect(0, 0, w, h);
-                      break;
-                  case 2:
-                      dashEffectR2.clearRect(0, 0, w, h);
-                      break;
-                  case 3:
-                      dashEffectR3.clearRect(0, 0, w, h);
-                      break;
-              }
           }
       }
       // when dash is not occuring, increase frame counter for how
       // wait until dash can occur again
-      else if(this.dashWaitFrame < this.maxDashWaitFrame) {
+      else if(this.dashWaitFrame < maxDashWaitFrame) {
           ++this.dashWaitFrame;
 
           // reached max amount of wait frames
-          if(this.dashWaitFrame >= this.maxDashWaitFrame)
+          if(this.dashWaitFrame >= maxDashWaitFrame)
               this.canDash = true;
       }
 
       let margin = 10;
-      if(mobile) {
-          if(joystickData.movex > 0)
-              this.dirx = 1;
-          if(joystickData.movex < 0)
-              this.dirx = -1;
-          if(joystickData.movey > 0)
-              this.diry = 1;
-          if(joystickData.movey < 0)
-              this.diry = -1;
-      }
+      // if(this.mobile) {
+      //     if(joystickData.movex > 0)
+      //         this.dirx = 1;
+      //     if(joystickData.movex < 0)
+      //         this.dirx = -1;
+      //     if(joystickData.movey > 0)
+      //         this.diry = 1;
+      //     if(joystickData.movey < 0)
+      //         this.diry = -1;
+      // }
       
       // don't allow movement past screen border
       // x
@@ -224,7 +164,7 @@ function User(id) {
       else
           this.canMovey = false;
 
-      if(!mobile) {
+      if(!this.mobile) {
           // actual movement of player
           // diagonal
           if(this.dirx != 0 && this.diry != 0) {
@@ -245,12 +185,12 @@ function User(id) {
                   this.y += this.diry * this.speed;
           }
       }
-      else {
-          if(this.canMovex)
-              this.x += joystickData.movex;
-          if(this.canMovey)
-              this.y += joystickData.movey;
-      }
+      // else {
+      //     if(this.canMovex)
+      //         this.x += joystickData.movex;
+      //     if(this.canMovey)
+      //         this.y += joystickData.movey;
+      // }
 
       // if player ever gets outside of the screen, move player back in
       if(this.x < margin)
@@ -368,8 +308,6 @@ function Potato() {
           this.y = h;
   }
 };
-
-
 
 let users = [];// 
 let potatos = ["potato"];// contains data for the potato for each game
@@ -824,13 +762,20 @@ function RenderPlayer() {
   this.height = -1, 
   this.maxSkins = -1,
   this.animationFrame = -1,
-  this.dashWaitFrame = -1
+  this.dashWaitFrame = -1,
+  this.inDash = false,
+  this.dashFrame = -1
 }
 
 function gameLoop(lobby) {
   // process stuff
   
   ++gameFrames[lobby];
+
+  // player movement (including dash)
+  for(let i = 0; i < lobbies[lobby].length; i++) {
+    lobbies[lobby][i].processInput();
+  }
 
   // render stuff
 
@@ -856,6 +801,8 @@ function gameLoop(lobby) {
     renderData.players[i].maxSkins = lobbies[lobby][i].maxSkins;
     renderData.players[i].animationFrame = lobbies[lobby][i].animationFrame;
     renderData.players[i].dashWaitFrame = lobbies[lobby][i].dashWaitFrame;
+    renderData.players[i].inDash = lobbies[lobby][i].dashPressed;
+    renderData.players[i].dashFrame = lobbies[lobby][i].dashFrame;
   }
 
   io.to(lobby.toString()).emit("server sending render data", (renderData));

@@ -1,7 +1,18 @@
-LAST WORKING ON:
--Trying to get dash UI to display
+SMALL GOALS:
+-Indicator that dash is ready (like colored border or something) (do this because the last bit
+    of the cooldown is when the bar goes across the border, which is not visible. So when it
+    looks like the dash is ready, you actually have to wait another like half of a second)
+-Player animation
+-Player points towards mouse
+-Potato
+-Next round
+-Game ends
+-Kick players when one player leaves
+-Mobile controls
 
--Make it actually work
+
+BIG GOALS:
+-Custom CSV settings file to read and write from, and even allow in game to have different games
 -More player characters
 -More maps
 -Can change name

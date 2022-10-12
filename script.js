@@ -92,10 +92,7 @@ function settings() {
 function backToMainMenu() {
     mapR.clearRect(0, 0, w, h);
     r.clearRect(0, 0, w, h);
-    dashEffectR0.clearRect(0, 0, w, h);
-    dashEffectR1.clearRect(0, 0, w, h);
-    dashEffectR2.clearRect(0, 0, w, h);
-    dashEffectR3.clearRect(0, 0, w, h);
+    dashEffectR.clearRect(0, 0, w, h);
 
     document.getElementById("mainMenu").style.visibility = "visible";
     document.getElementById("menuSubText").style.visibility = 
@@ -119,20 +116,19 @@ let mapR = mapC.getContext("2d");
 let c = document.getElementById("mainCanvas");
 let r = c.getContext("2d");
 // with more players dash stuff here
-let dashEffectC0 = document.getElementById("dashEffect0");
-let dashEffectC1 = document.getElementById("dashEffect1");
-let dashEffectC2 = document.getElementById("dashEffect2");
-let dashEffectC3 = document.getElementById("dashEffect3");
-let dashEffectR0 = dashEffectC0.getContext("2d");
-let dashEffectR1 = dashEffectC1.getContext("2d");
-let dashEffectR2 = dashEffectC2.getContext("2d");
-let dashEffectR3 = dashEffectC3.getContext("2d");
+let dashEffectC = document.getElementById("dashEffect");
+let dashEffectR = dashEffectC.getContext("2d");
 let w = -1;
 let h = -1;
 let playerColors = ["yellow", "lime", "cornflowerBlue", "red"];
 let playerNames = ["yellow", "green", "blue", "red"];
 let maxGameFrame = -1;
 let maxDashWaitFrame = -1;
+let previousInDash = false;
+let previousPos = {
+    x: "x",
+    y: "y"
+}// for dash effect
 
 let ui = { 
     width: 112,
@@ -416,10 +412,7 @@ socket.on("game started", (init) => {
 
     mapR.clearRect(0, 0, w, h);
     r.clearRect(0, 0, w, h);
-    dashEffectR0.clearRect(0, 0, w, h);
-    dashEffectR1.clearRect(0, 0, w, h);
-    dashEffectR2.clearRect(0, 0, w, h);
-    dashEffectR3.clearRect(0, 0, w, h);
+    dashEffectR.clearRect(0, 0, w, h);
 
     // set up all the game data
 
@@ -430,14 +423,8 @@ socket.on("game started", (init) => {
     c.width = w;
     c.height = h;
     // with more players dash stuff here
-    dashEffectC0.width = w;
-    dashEffectC1.width = w;
-    dashEffectC2.width = w;
-    dashEffectC3.width = w;
-    dashEffectC0.height = h;
-    dashEffectC1.height = h;
-    dashEffectC2.height = h;
-    dashEffectC3.height = h;
+    dashEffectC.width = w;
+    dashEffectC.height = h;
 
     map.size = init.map.size; 
     map.mapData = init.map.data;
@@ -448,18 +435,9 @@ socket.on("game started", (init) => {
     explosion.frame = 0;
 
     // with more players dash stuff here
-    dashEffectR0.globalAlpha = 0.25;
-    dashEffectR0.strokeStyle = "white";
-    dashEffectR0.lineWidth = 80;
-    dashEffectR1.globalAlpha = 0.25;
-    dashEffectR1.strokeStyle = "white";
-    dashEffectR1.lineWidth = 80;
-    dashEffectR2.globalAlpha = 0.25;
-    dashEffectR2.strokeStyle = "white";
-    dashEffectR2.lineWidth = 80;
-    dashEffectR3.globalAlpha = 0.25;
-    dashEffectR3.strokeStyle = "white";
-    dashEffectR3.lineWidth = 80;
+    dashEffectR.globalAlpha = 0.25;
+    dashEffectR.strokeStyle = "white";
+    dashEffectR.lineWidth = 80;
 
     window.setTimeout(map.show, init.startWait);// for some reason, map.show is not able
     // to draw anything unless it is called from a window.setTimeout()
@@ -527,7 +505,7 @@ function press(e) {
     if(e.keyCode == "83" || e.keyCode == "40")
         socket.emit("player pressed", "down", lobby, index);
 
-    if(e.keyCode == "32" && players[clientId].canDash)
+    if(e.keyCode == "32")
         socket.emit("player pressed", "dash", lobby, index);
 }
 
@@ -583,16 +561,6 @@ let uiImgs = {
 uiImgs.dash.src = "Assets/Skills.png";
 
 socket.on("server sending render data", (data) => {
-    console.log("data received from server");
-    console.log(data);
-    console.log("here");
-    console.log(index);
-    console.log(data.players);
-    console.log(data.players[1]);
-    console.log(data.players[index]);
-    console.log("finally");
-    console.log(data.players[index].dashWaitFrame);
-
     r.clearRect(0, 0, w, h);
 
     // players
@@ -621,13 +589,35 @@ socket.on("server sending render data", (data) => {
 });
 
 function showPlayer(player, playerIndex) {
+    // dash effect, but only for client
+    if(playerIndex == index) {
+        if(player.inDash) {
+            if(player.dashFrame == 1) {
+                dashEffectR.beginPath();
+                dashEffectR.moveTo(player.x, player.y);
+                dashEffectR.lineTo(player.x, player.y);
+            }
+            else {
+                dashEffectR.lineTo(player.x, player.y);
+                dashEffectR.stroke();
+            }
+        }
+
+        // clear dash effect right after dash ends
+        if(!player.inDash && previousInDash)
+            dashEffectR.clearRect(0, 0, w, h);
+
+        previousInDash = player.inDash;
+    }
+
+    // player
     let clipx = player.width * playerIndex;
 
     if(player.lastx == -1) {
         let move = player.maxSkins - playerIndex;
         clipx += (move + (move - 1)) * player.width;
     }
-    
+
     r.drawImage(
         playerImg,// image
         clipx,// cliiping x start
@@ -666,10 +656,6 @@ function showUiTime(frame) {
 }
 
 function showUiDash(frame) {
-    console.log("please work");
-    console.log("frame " + frame);
-    console.log("max frame " + maxDashWaitFrame);
-
     //border
     r.globalAlpha = uiData.general.transparency;
     r.fillStyle = "black";
@@ -689,19 +675,6 @@ function showUiDash(frame) {
         uiData.general.width,
         uiData.general.height);
 
-    console.log("icon data");
-    console.log(uiImgs.dash);
-    console.log((Math.floor(uiData.general.frame / uiData.general.cols) +
-    (uiData.general.frame % uiData.general.cols -
-    Math.floor(uiData.general.frame / uiData.general.cols))) * uiData.general.width);
-    console.log((Math.floor(uiData.general.frame / uiData.general.cols)) * uiData.general.height);
-    console.log(uiData.general.width);
-    console.log(uiData.general.height);
-    console.log(uiData.dash.x);
-    console.log(uiData.dash.y);
-    console.log(uiData.general.width);
-    console.log(uiData.general.height);
-    
     // overlay to show time remaining until usable
     r.globalAlpha = uiData.general.transparency - 0.2;
     r.fillRect(uiData.dash.x, uiData.dash.y, 
