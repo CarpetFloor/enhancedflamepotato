@@ -546,12 +546,16 @@ function mouseMoved(e) {
 
     lastMousex *= w;
     lastMousey *= h;
-
+    
     if((x > lastMousex) && (lastx != -1)) {
+        lastx = -1;// set last x here so that in case the mouse moves multiple
+        /* times before the next game frame happens, this won't happen multiple times*/
         console.log("settting", -1);
         socket.emit("player setting lastx", -1, lobby, index);
     }
-    else if((x < lastMousex) && (lastx != -1)) {
+    else if((x < lastMousex) && (lastx != 1)) {
+        lastx = 1;// set last x here so that in case the mouse moves multiple
+        /* times before the next game frame happens, this won't happen multiple times*/
         console.log("settting", 1);
         socket.emit("player setting lastx", 1, lobby, index);
     }
@@ -631,7 +635,6 @@ socket.on("server sending render data", (data) => {
 function showPlayer(player, playerIndex) {
     // dash effect, but only for client
     if(playerIndex == index) {
-        console.log("animation frame", player.animationFrame);
         if(player.inDash) {
             if(player.dashFrame == 1) {
                 dashEffectR.beginPath();
