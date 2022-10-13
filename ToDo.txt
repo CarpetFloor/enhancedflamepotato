@@ -1,5 +1,4 @@
 SMALL GOALS:
--Make client player render on top of other client players
 -Player points towards mouse (including mouse movement detection)
 -Potato
 -Next round

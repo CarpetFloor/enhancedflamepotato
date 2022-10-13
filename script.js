@@ -563,9 +563,16 @@ uiImgs.dash.src = "Assets/Skills.png";
 socket.on("server sending render data", (data) => {
     r.clearRect(0, 0, w, h);
 
-    // players
+    // render other players first
     for(let i = 0; i < data.players.length; i++) {
-        showPlayer(data.players[i], i);
+        if(i != index)
+            showPlayer(data.players[i], i);
+    }
+
+    //then render client so that client is always rendered on top
+    for(let i = 0; i < data.players.length; i++) {
+        if(i == index)
+            showPlayer(data.players[i], i);
     }
 
     // potato
