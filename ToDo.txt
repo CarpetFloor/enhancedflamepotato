@@ -1,5 +1,4 @@
 SMALL GOALS:
--Player animation
 -Player points towards mouse (including mouse movement detection)
 -Potato
 -Next round

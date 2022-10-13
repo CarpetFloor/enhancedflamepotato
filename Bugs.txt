@@ -1,9 +1,11 @@
 NEW
-
+-Join game text is white on Chrome, but orange on Firefox
 -Server crashes when one player in game tries to leave
+-player rendering is slightly blurry and there is a a small rectange to the top right
+    of each player
 
 
-FROM SOURCE
+FROM SOURCE CODE
 
 (!)==high priority
 [==FILES==]

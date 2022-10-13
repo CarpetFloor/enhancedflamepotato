@@ -591,6 +591,7 @@ socket.on("server sending render data", (data) => {
 function showPlayer(player, playerIndex) {
     // dash effect, but only for client
     if(playerIndex == index) {
+        console.log("animation frame", player.animationFrame);
         if(player.inDash) {
             if(player.dashFrame == 1) {
                 dashEffectR.beginPath();

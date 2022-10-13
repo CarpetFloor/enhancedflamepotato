@@ -30,7 +30,7 @@ function User(id) {
   this.animationFrame = 0,
   this.maxAnimationFrame = 3,
   this.animationWaitFrame = 0,
-  this.maxAnimationWaitFrame = 2,
+  this.maxAnimationWaitFrame = 1,
   this.x = w / 2,
   this.y = h / 2,
   this.width = 64,
@@ -48,7 +48,7 @@ function User(id) {
   this.dashDiry = 0,
   this.canMovex = true,
   this.canMoveY = true,
-  this.speed = 23,
+  this.speed = 17,
   this.dashPressed = false,
   this.canDash = true,
   this.dashMultiplier = 4,
@@ -201,6 +201,26 @@ function User(id) {
           this.y = margin * 2;
       if(this.y > h - margin)
           this.y = h - (margin * 2);
+  },
+  this.animation = function () {
+      // set next frame of animation when this function is called next frame
+        // if the player is moving
+        if(this.dirx != 0 || this.diry != 0) {
+          ++this.animationWaitFrame;
+
+          if(this.animationWaitFrame > this.maxAnimationWaitFrame) {
+              this.animationWaitFrame = 0;
+              ++this.animationFrame;
+
+              if(this.animationFrame > this.maxAnimationFrame)
+                  this.animationFrame = 0;
+          }
+      }
+      // when player is not moving, go to idle frame of animation
+      else {
+          this.animationWaitFrame = 0;
+          this.animationFrame = 0;
+      }
   }
 };
 
@@ -320,7 +340,7 @@ let lobbies = [[]];// contains data for each client
 let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
 let startWait = 500;
-let fps = 30;
+let fps = 60;
 let gameLengthPerPlayer = 10;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 let maxDashWaitFrame = fps * 5;
@@ -772,9 +792,10 @@ function gameLoop(lobby) {
   
   ++gameFrames[lobby];
 
-  // player movement (including dash)
+  // player movement (including dash) and animation
   for(let i = 0; i < lobbies[lobby].length; i++) {
     lobbies[lobby][i].processInput();
+    lobbies[lobby][i].animation();
   }
 
   // render stuff
