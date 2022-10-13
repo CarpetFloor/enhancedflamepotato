@@ -658,7 +658,11 @@ function showUiTime(frame) {
 function showUiDash(frame) {
     //border
     r.globalAlpha = uiData.general.transparency;
-    r.fillStyle = "black";
+    // visual indicator when dash is ready
+    if(frame == maxDashWaitFrame)
+        r.fillStyle = "#F5B041";
+    else
+        r.fillStyle = "black";
     r.fillRect(uiData.dash.x, uiData.dash.y, uiData.general.width, uiData.general.height);
 
     // icon

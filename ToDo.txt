@@ -1,9 +1,6 @@
 SMALL GOALS:
--Indicator that dash is ready (like colored border or something) (do this because the last bit
-    of the cooldown is when the bar goes across the border, which is not visible. So when it
-    looks like the dash is ready, you actually have to wait another like half of a second)
 -Player animation
--Player points towards mouse
+-Player points towards mouse (including mouse movement detection)
 -Potato
 -Next round
 -Game ends
