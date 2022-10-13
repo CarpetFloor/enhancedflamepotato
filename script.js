@@ -550,13 +550,11 @@ function mouseMoved(e) {
     if((x > lastMousex) && (lastx != -1)) {
         lastx = -1;// set last x here so that in case the mouse moves multiple
         /* times before the next game frame happens, this won't happen multiple times*/
-        console.log("settting", -1);
         socket.emit("player setting lastx", -1, lobby, index);
     }
     else if((x < lastMousex) && (lastx != 1)) {
         lastx = 1;// set last x here so that in case the mouse moves multiple
         /* times before the next game frame happens, this won't happen multiple times*/
-        console.log("settting", 1);
         socket.emit("player setting lastx", 1, lobby, index);
     }
 };

@@ -1,6 +1,10 @@
 SMALL GOALS:
--Player points towards mouse (including mouse movement detection)
--Potato
+-Potato moves with player (including direction) when attached
+-Potato throw
+-Potato missed throw ends up on ground and can only be picked up by thrower
+-Potato hit throw transfers potato to other player
+-Potato burning effect (so it actually is a flame potato, kind of actually like what the 
+    name of this game is)
 -Next round
 -Game ends
 -Kick players when one player leaves
