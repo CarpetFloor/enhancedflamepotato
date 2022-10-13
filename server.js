@@ -68,8 +68,6 @@ function User(id) {
               this.canDash = false;
               this.dashWaitFrame = 0;
           }
-
-          //dashEffectR.moveTo(this.x, this.y);
           
           if(!this.mobile) {
               // diagonal dash
@@ -608,6 +606,11 @@ io.on('connection', (socket) => {
           lobbies[lobby][index].diry = 0;
       }
   });
+
+  // make client lastx different because client moved mouse and facing in new direction
+  socket.on("player setting lastx", (lastx, lobby, index) => {
+      lobbies[lobby][index].lastx = lastx;
+  })
 });
 
 http.listen(process.env.PORT || port, () => {
@@ -784,7 +787,8 @@ function RenderPlayer() {
   this.animationFrame = -1,
   this.dashWaitFrame = -1,
   this.inDash = false,
-  this.dashFrame = -1
+  this.dashFrame = -1,
+  this.lastx = "x"
 }
 
 function gameLoop(lobby) {
@@ -824,6 +828,7 @@ function gameLoop(lobby) {
     renderData.players[i].dashWaitFrame = lobbies[lobby][i].dashWaitFrame;
     renderData.players[i].inDash = lobbies[lobby][i].dashPressed;
     renderData.players[i].dashFrame = lobbies[lobby][i].dashFrame;
+    renderData.players[i].lastx = lobbies[lobby][i].lastx;
   }
 
   io.to(lobby.toString()).emit("server sending render data", (renderData));

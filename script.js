@@ -129,6 +129,10 @@ let previousPos = {
     x: "x",
     y: "y"
 }// for dash effect
+lastMousex = "x";
+lastMousey = "y";
+let x = "x";
+let lastx = "x";
 
 let ui = { 
     width: 112,
@@ -472,8 +476,8 @@ function startGame() {
         document.addEventListener("keyup", release);
 
     // set the player and potato direction based off of the mouse
-    // if(!mobile)
-    //     document.addEventListener("mousemove", mouseMoved);
+    if(!mobile)
+        document.addEventListener("mousemove", mouseMoved);
     
     // detect click or tap for throwing the potato
     // if(!mobile)
@@ -527,6 +531,32 @@ function release(e) {
         socket.emit("player released", "down", lobby, index);
 }
 
+/*
+non mobile
+mouse moved
+*/
+function mouseMoved(e) {
+    // whoever thought that getting the position of the mouse would be this hard
+    let bounds = c.getBoundingClientRect();
+    lastMousex = e.pageX - bounds.left - scrollX;
+    lastMousey = e.pageY - bounds.top - scrollY;
+
+    lastMousex /= bounds.width; 
+    lastMousey /= bounds.height;
+
+    lastMousex *= w;
+    lastMousey *= h;
+
+    if((x > lastMousex) && (lastx != -1)) {
+        console.log("settting", -1);
+        socket.emit("player setting lastx", -1, lobby, index);
+    }
+    else if((x < lastMousex) && (lastx != -1)) {
+        console.log("settting", 1);
+        socket.emit("player setting lastx", 1, lobby, index);
+    }
+};
+
 let playerImg = new Image();
 playerImg.src = "Assets/Players.png";
 let potatoImg = new Image();
@@ -571,8 +601,11 @@ socket.on("server sending render data", (data) => {
 
     //then render client so that client is always rendered on top
     for(let i = 0; i < data.players.length; i++) {
-        if(i == index)
+        if(i == index) {
+            x = data.players[i].x;
+            lastx = data.players[i].lastx;
             showPlayer(data.players[i], i);
+        }
     }
 
     // potato
