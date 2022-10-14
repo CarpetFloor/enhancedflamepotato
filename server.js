@@ -223,6 +223,7 @@ function User(id) {
 };
 
 function Potato() {
+  this.lobby = -1,
   this.x = 0,
   this.y = 0,
   this.dir = 1,
@@ -243,77 +244,77 @@ function Potato() {
   this.movement = function() {
       // when attached to a player
       if(this.attached) {
-          this.dir = players[this.player].lastx;
-          this.x = players[this.player].x + ((this.dir == -1) ? -25 : 25);
-          this.y = players[this.player].y + 35;
+          this.dir = lobbies[this.lobby][this.player].lastx;
+          this.x = lobbies[this.lobby][this.player].x + ((this.dir == -1) ? -25 : 25);
+          this.y = lobbies[this.lobby][this.player].y + 35;
 
           // possibly check for pass to other player here
       }
-      // when throw missed and on the ground only allow
-      // player who throw potato to pick it back up
-      else if (this.canBeThrown){ 
-          if(inCollision(this.x, this.y, 
-          players[this.player].x, players[this.player].y)) {
-              this.attached = true;
-          }
-      }
+      // // when throw missed and on the ground only allow
+      // // player who throw potato to pick it back up
+      // else if (this.canBeThrown){ 
+      //     if(inCollision(this.x, this.y, 
+      //     players[this.player].x, players[this.player].y)) {
+      //         this.attached = true;
+      //     }
+      // }
 
-      // throw
-      if(this.threw) {
-          // set initial throw data stuff
-          if(this.throwFrame == 0) {
-              this.attached = false;
-              this.canBeThrown = false;
+      // // throw
+      // if(this.threw) {
+      //     // set initial throw data stuff
+      //     if(this.throwFrame == 0) {
+      //         this.attached = false;
+      //         this.canBeThrown = false;
 
-              this.mouseThrowx = lastMousex;
-              this.mouseThrowy = lastMousey;
+      //         this.mouseThrowx = lastMousex;
+      //         this.mouseThrowy = lastMousey;
 
-              let distx = Math.abs(this.x - this.mouseThrowx);
-              let disty = Math.abs(this.y - this.mouseThrowy);
+      //         let distx = Math.abs(this.x - this.mouseThrowx);
+      //         let disty = Math.abs(this.y - this.mouseThrowy);
 
-              let theta = Math.atan(disty / distx);
+      //         let theta = Math.atan(disty / distx);
 
-              this.throwMovex = (Math.cos(theta) * this.throwSpeed);
-              this.throwMovey = (Math.sin(theta) * this.throwSpeed);
+      //         this.throwMovex = (Math.cos(theta) * this.throwSpeed);
+      //         this.throwMovey = (Math.sin(theta) * this.throwSpeed);
 
-              //the remainder of the stuff to set the correct throwMovex and 
-              // throw throwMovey is probably not the best way of doing it
-              // but I'm dumb and don't know how else to do it
-              // positive/ negative only wors when player is above and to the
-              // left of the mouse, so this correctly sets it
-              if(this.mouseThrowx < this.x)
-                  this.throwMovex *= -1;
-              if(this.mouseThrowy < this.y)
-                  this.throwMovey *= -1;
-          }
+      //         //the remainder of the stuff to set the correct throwMovex and 
+      //         // throw throwMovey is probably not the best way of doing it
+      //         // but I'm dumb and don't know how else to do it
+      //         // positive/ negative only wors when player is above and to the
+      //         // left of the mouse, so this correctly sets it
+      //         if(this.mouseThrowx < this.x)
+      //             this.throwMovex *= -1;
+      //         if(this.mouseThrowy < this.y)
+      //             this.throwMovey *= -1;
+      //     }
 
-          // actually move potato when being thrown
-          this.x += this.throwMovex;
-          this.y += this.throwMovey;
+      //     // actually move potato when being thrown
+      //     this.x += this.throwMovex;
+      //     this.y += this.throwMovey;
 
-          // check for pass to other player here
-          for(let i = 0; i < players.length; i++) {
-              if(players[i].id != id) {
-                  if(inCollision(this.x, this.y, 
-                  players[i].x, players[i].y)) {
-                      this.player = i;
-                      this.attached = true;
-                      this.threw = false;
-                      this.canBeThrown = true;// for if client
-                      // gets potato again they will be able to
-                      // throw it
-                      recentlyPassed = true;
-                  }
-              }
-          }
+      //     // check for pass to other player here
+      //     for(let i = 0; i < players.length; i++) {
+      //         if(players[i].id != id) {
+      //             if(inCollision(this.x, this.y, 
+      //             players[i].x, players[i].y)) {
+      //                 this.player = i;
+      //                 this.attached = true;
+      //                 this.threw = false;
+      //                 this.canBeThrown = true;// for if client
+      //                 // gets potato again they will be able to
+      //                 // throw it
+      //                 recentlyPassed = true;
+      //             }
+      //         }
+      //     }
 
-          ++this.throwFrame;
-          if(this.throwFrame >= this.maxThrowFrame) {
-              this.throwFrame = 0;
-              this.threw = false;
-              this.canBeThrown = true;
-          }
-      }
+      //     ++this.throwFrame;
+      //     if(this.throwFrame >= this.maxThrowFrame) {
+      //         this.throwFrame = 0;
+      //         this.threw = false;
+      //         this.canBeThrown = true;
+      //     }
+      // }
 
       // if potato ever gets outside of the screen, move potato back in
       if(this.x < 0)
@@ -510,6 +511,7 @@ io.on('connection', (socket) => {
     if(lobbies[lobby].length > 1 && !(lobbiesInGame.includes(lobby))) {
       lobbiesInGame.push(lobby);
       potatos.push(new Potato);
+      potatos[potatos.length - 1].lobby = lobby;
       let interval;
       intervals.push(interval);
       overs.push(false);
@@ -527,13 +529,6 @@ io.on('connection', (socket) => {
 
   socket.on("next round", (lobby) => {
     // FINISH
-    // reset stuff here
-    lobbiesInGame.push(lobby);
-    potatos.push(new Potato);
-    clearInterval(intervals[lobby]);
-    overs[lobby] = false;
-    gameFrames[lobby] = 0;
-    maxGameFrames[lobby] = lobbies[lobby].length * fps * gameLengthPerPlayer;
 
     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
@@ -770,6 +765,7 @@ function gameMapData(lobby) {
 
     // set who starts with the potato
     potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
+    potatos[lobby].attached = true;
     // set position of potato to position of the player who has it
     potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
     potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
@@ -801,6 +797,9 @@ function gameLoop(lobby) {
     lobbies[lobby][i].processInput();
     lobbies[lobby][i].animation();
   }
+
+  // potato stuff
+  potatos[lobby].movement();
 
   // render stuff
 

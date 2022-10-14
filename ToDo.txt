@@ -1,10 +1,10 @@
 SMALL GOALS:
--Potato moves with player (including direction) when attached
 -Potato throw
 -Potato missed throw ends up on ground and can only be picked up by thrower
 -Potato hit throw transfers potato to other player
 -Potato burning effect (so it actually is a flame potato, kind of actually like what the 
     name of this game is)
+-Potato knocks back player that got hit with it and maybe add fire impact effect
 -Next round
 -Game ends
 -Kick players when one player leaves

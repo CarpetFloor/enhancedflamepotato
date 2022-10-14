@@ -618,8 +618,8 @@ socket.on("server sending render data", (data) => {
         0, // clip y start
         data.potato.size, // clip x end
         data.potato.size, // clip y end
-        data.potato.x - ((data.potato.dir == -1) ? data.potato.size : 0), // x
-        data.potato.y, // y
+        data.potato.x - (data.potato.size / 2), // x
+        data.potato.y - data.potato.yOffset, // y
         data.potato.size, // width 
         data.potato.size); // height
     
