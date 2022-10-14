@@ -9,9 +9,18 @@ SMALL GOALS:
 -Game ends
 -Kick players when one player leaves
 -Mobile controls
+-Add flaming potato to main menu
+-Make all indentation of server.js 4
 
 
 BIG GOALS:
+-Possibly add an undo move ability (either have along with dash or choose dash or undo move),
+    where the player can instantly undo the last like 3 moves (frames) they made. There would 
+    be an effect like dash and an icon that recharges like dash, and recharge would be the same
+    as dash. NOTE: all abilities should have the same cooldown adn shouldn't have too slow or 
+    too long of a recharge. Basically, make it long enough so that it can't be spammed and so 
+    that it should be used in a more tactical and thoughtful manner; but make it fast enough so
+    that it can be used multiple times in the game rather than just like once or twice.
 -Custom CSV settings file to read and write from, and even allow in game to have different games
 -More player characters
 -More maps

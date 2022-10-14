@@ -125,14 +125,14 @@ let playerNames = ["yellow", "green", "blue", "red"];
 let maxGameFrame = -1;
 let maxDashWaitFrame = -1;
 let previousInDash = false;
+// for dash effect
 let previousPos = {
     x: "x",
     y: "y"
-}// for dash effect
-lastMousex = "x";
-lastMousey = "y";
+}
 let x = "x";
 let lastx = "x";
+let potatoPlayer = -1;
 
 let ui = { 
     width: 112,
@@ -480,8 +480,8 @@ function startGame() {
         document.addEventListener("mousemove", mouseMoved);
     
     // detect click or tap for throwing the potato
-    // if(!mobile)
-    //     document.getElementById("mainCanvas").addEventListener("mousedown", mouseDown);
+    if(!mobile)
+        document.getElementById("mainCanvas").addEventListener("mousedown", mouseDown);
     // else
     //     document.getElementById("mainCanvas").addEventListener("touchstart", touched);
 
@@ -538,8 +538,8 @@ mouse moved
 function mouseMoved(e) {
     // whoever thought that getting the position of the mouse would be this hard
     let bounds = c.getBoundingClientRect();
-    lastMousex = e.pageX - bounds.left - scrollX;
-    lastMousey = e.pageY - bounds.top - scrollY;
+    let lastMousex = e.pageX - bounds.left - scrollX;
+    let lastMousey = e.pageY - bounds.top - scrollY;
 
     lastMousex /= bounds.width; 
     lastMousey /= bounds.height;
@@ -558,6 +558,30 @@ function mouseMoved(e) {
         socket.emit("player setting lastx", 1, lobby, index);
     }
 };
+
+/*
+non mobile
+mouse clicked
+*/
+function mouseDown(e) {
+    console.log("clicked");
+    // only able to tell server that client is trying to throw potato when
+    // client has the potato, also this reduces the need for the server to
+    // have to check if the client has the potato
+    if(potatoPlayer = index) {
+        let bounds = c.getBoundingClientRect();
+        let lastMousex = e.pageX - bounds.left - scrollX;
+        let lastMousey = e.pageY - bounds.top - scrollY;
+
+        lastMousex /= bounds.width; 
+        lastMousey /= bounds.height;
+
+        lastMousex *= w;
+        lastMousey *= h;
+
+        socket.emit("player throwing potato", lastMousex, lastMousey, lobby);
+    }
+}
 
 let playerImg = new Image();
 playerImg.src = "Assets/Players.png";
@@ -604,6 +628,7 @@ socket.on("server sending render data", (data) => {
     //then render client so that client is always rendered on top
     for(let i = 0; i < data.players.length; i++) {
         if(i == index) {
+            console.log(data.players[i].x, data.players[i].y)
             x = data.players[i].x;
             lastx = data.players[i].lastx;
             showPlayer(data.players[i], i);
@@ -611,7 +636,6 @@ socket.on("server sending render data", (data) => {
     }
 
     // potato
-    // offset different than from source code
     r.drawImage(
         potatoImg, // img
         (data.potato.dir == 1) ? 0 : data.potato.size, // clip x start
@@ -622,6 +646,8 @@ socket.on("server sending render data", (data) => {
         data.potato.y - data.potato.yOffset, // y
         data.potato.size, // width 
         data.potato.size); // height
+    
+    potatoPlayer = data.potato.player;
     
     // ui time left
     showUiTime(data.gameFrame);
