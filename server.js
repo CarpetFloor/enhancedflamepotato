@@ -247,15 +247,10 @@ function Potato() {
           this.dir = lobbies[this.lobby][this.player].lastx;
           this.x = lobbies[this.lobby][this.player].x + ((this.dir == -1) ? -25 : 25);
           this.y = lobbies[this.lobby][this.player].y + 35;
-
-          // possibly check for pass to other player here
       }
       // when throw missed and on the ground only allow
       // player who throw potato to pick it back up
       else if (this.canBeThrown){ 
-          // console.log(
-          //   this.x, this.y,
-          //   lobbies[this.player].x, lobbies[this.player].y)
           if(touching(
             this.x, this.y, 
             lobbies[this.lobby][this.player].x, lobbies[this.lobby][this.player].y)) {
@@ -283,10 +278,7 @@ function Potato() {
               this.throwMovey = (Math.sin(theta) * this.throwSpeed);
 
               //the remainder of the stuff to set the correct throwMovex and 
-              // throw throwMovey is probably not the best way of doing it
-              // but I'm dumb and don't know how else to do it
-              // positive/ negative only wors when player is above and to the
-              // left of the mouse, so this correctly sets it
+              // throw throwMovey
               if(this.mouseThrowx < this.x)
                   this.throwMovex *= -1;
               if(this.mouseThrowy < this.y)
@@ -305,10 +297,15 @@ function Potato() {
                     this.x, this.y, 
                     lobbies[this.lobby][i].x, lobbies[this.lobby][i].y)) {
 
+                      // update potato data
                       this.player = i;
                       this.attached = true;
                       this.threw = false;
                       this.canBeThrown = true;
+
+                      // knockback of player
+                      lobbies[this.lobby][this.player].x += this.throwMovex;
+                      lobbies[this.lobby][this.player].y += this.throwMovey;
                   }
               }
           }

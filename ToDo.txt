@@ -1,7 +1,4 @@
 SMALL GOALS:
--Potato burning effect (so it actually is a flame potato, kind of actually like what the 
-    name of this game is)
--Potato knocks back player that got hit with it and maybe add fire impact effect
 -Next round
 -Game ends
 -Kick players when one player leaves
@@ -11,6 +8,9 @@ SMALL GOALS:
 
 
 ADDITIONAL STUFF GOALS:
+-Potato burning effect (so it actually is a flame potato, kind of actually like what the 
+    name of this game is)
+-Potato hit player impact effect
 -When game is over, send everyone (including spectators) back to lobby to allow playing again
 -Possibly add an undo move ability (either have along with dash or choose dash or undo move),
     where the player can instantly undo the last like 3 moves (frames) they made. There would 
