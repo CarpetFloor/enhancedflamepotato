@@ -564,11 +564,10 @@ non mobile
 mouse clicked
 */
 function mouseDown(e) {
-    console.log("clicked");
     // only able to tell server that client is trying to throw potato when
     // client has the potato, also this reduces the need for the server to
     // have to check if the client has the potato
-    if(potatoPlayer = index) {
+    if(potatoPlayer == index) {
         let bounds = c.getBoundingClientRect();
         let lastMousex = e.pageX - bounds.left - scrollX;
         let lastMousey = e.pageY - bounds.top - scrollY;
@@ -628,7 +627,6 @@ socket.on("server sending render data", (data) => {
     //then render client so that client is always rendered on top
     for(let i = 0; i < data.players.length; i++) {
         if(i == index) {
-            console.log(data.players[i].x, data.players[i].y)
             x = data.players[i].x;
             lastx = data.players[i].lastx;
             showPlayer(data.players[i], i);

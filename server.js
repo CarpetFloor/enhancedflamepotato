@@ -297,21 +297,21 @@ function Potato() {
           this.x += this.throwMovex;
           this.y += this.throwMovey;
 
-          // // check for pass to other player here
-          // for(let i = 0; i < lobbies[this.lobby].length; i++) {
-          //     // don't need to check if hit the player who threw
-          //     if(i != this.player) {
-          //         if(touching(
-          //           this.x, this.y, 
-          //           lobbies[this.lobby][i].x, lobbies[this.lobby][i].y)) {
+          // check for pass to other player here
+          for(let i = 0; i < lobbies[this.lobby].length; i++) {
+              // don't need to check if hit the player who threw
+              if(i != this.player) {
+                  if(touching(
+                    this.x, this.y, 
+                    lobbies[this.lobby][i].x, lobbies[this.lobby][i].y)) {
 
-          //             this.player = i;
-          //             this.attached = true;
-          //             this.threw = false;
-          //             this.canBeThrown = true;
-          //         }
-          //     }
-          // }
+                      this.player = i;
+                      this.attached = true;
+                      this.threw = false;
+                      this.canBeThrown = true;
+                  }
+              }
+          }
 
           ++this.throwFrame;
           if(this.throwFrame >= this.maxThrowFrame) {
@@ -391,12 +391,6 @@ io.on('connection', (socket) => {
       for(let i = 0; i < lobbiesInGame.length; i++) {
         if(lobbiesInGame[i] == lobbyRemovePos) {
           lobbiesInGame.splice(i, 1);
-          potatos.splice(i, 1);
-          intervals.splice(i, 1);
-          overs.splice(i, 1);
-          uis.splice(i, 1);
-          gameFrames.splice(i, 1);
-          maxGameFrames.splice(i, 1);
           break;
         }
       }
@@ -822,6 +816,7 @@ function gameLoop(lobby) {
 
   // potato stuff
   potatos[lobby].movement();
+  console.log(potatos[lobby].player)
 
   // render stuff
 

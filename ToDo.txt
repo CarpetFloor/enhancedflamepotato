@@ -1,7 +1,4 @@
 SMALL GOALS:
--Potato throw
--Potato missed throw ends up on ground and can only be picked up by thrower
--Potato hit throw transfers potato to other player
 -Potato burning effect (so it actually is a flame potato, kind of actually like what the 
     name of this game is)
 -Potato knocks back player that got hit with it and maybe add fire impact effect
@@ -13,7 +10,8 @@ SMALL GOALS:
 -Make all indentation of server.js 4
 
 
-BIG GOALS:
+ADDITIONAL STUFF GOALS:
+-When game is over, send everyone (including spectators) back to lobby to allow playing again
 -Possibly add an undo move ability (either have along with dash or choose dash or undo move),
     where the player can instantly undo the last like 3 moves (frames) they made. There would 
     be an effect like dash and an icon that recharges like dash, and recharge would be the same
