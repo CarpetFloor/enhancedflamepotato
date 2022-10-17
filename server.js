@@ -342,7 +342,7 @@ let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
 let startWait = 500;
 let fps = 60;
-let gameLengthPerPlayer = 10;// in seconds
+let gameLengthPerPlayer = 2;//10;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 let maxDashWaitFrame = fps * 5;
 
@@ -706,7 +706,8 @@ function gameMapData(lobby) {
             h: h,
         },
         startWait: startWait,
-        clients: lobbies[lobby]
+        clients: lobbies[lobby],
+        fps: fps
     };
     
     // generate map
@@ -761,12 +762,10 @@ function gameMapData(lobby) {
                 border);
 
                 // check if too close to eaach other player with pos
-                generateAgain = false;
                 for(let j = 0; j < lobbies[lobby].length; j++) {
-                    if(touching(x, y, 
-                    lobbies[lobby][j].x, 
-                    lobbies[lobby][j].y))
-                        generateAgain = true;
+                    generateAgain = touching(x, y, 
+                      lobbies[lobby][j].x, 
+                      lobbies[lobby][j].y);
                 }
             }
 
@@ -813,7 +812,6 @@ function gameLoop(lobby) {
 
   // potato stuff
   potatos[lobby].movement();
-  console.log(potatos[lobby].player)
 
   // render stuff
 
@@ -848,8 +846,8 @@ function gameLoop(lobby) {
   io.to(lobby.toString()).emit("server sending render data", (renderData));
 
   if(gameFrames[lobby] == maxGameFrames[lobby]) {
-    console.log("game over");
-
     clearInterval(intervals[lobby]);
+
+    io.to(lobby.toString()).emit("game over");
   }
 }

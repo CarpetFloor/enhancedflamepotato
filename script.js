@@ -133,6 +133,9 @@ let previousPos = {
 let x = "x";
 let lastx = "x";
 let potatoPlayer = -1;
+let playersRenderData;
+let potatoRenderData;
+let fps = -1;
 
 let ui = { 
     width: 112,
@@ -254,141 +257,6 @@ let map = {
         startGame();
     }
 }; map.loadImage();
-
-let explosion = {
-    img: new Image(),
-    width: 153,
-    height: 153,
-    frame: 0,
-    rows: 4,
-    cols: 3,
-    loadImage: function() {
-        this.img.src = "Assets/Explosion.png";
-    },
-    show: function() {
-        r.clearRect(0, 0, w, h);
-        
-        if(potato.player != clientId)
-            players[clientId].show();
-        showOtherPlayers();
-
-        // for some reason this dot doesn't work for this 
-        r.drawImage(
-            explosion.img,// image
-            // clipping x start
-            (Math.floor(explosion.frame / explosion.cols) + 
-            (explosion.frame % explosion.cols -
-            Math.floor(explosion.frame / explosion.cols))) * explosion.width,
-            // clipping y start 
-            (Math.floor(explosion.frame / explosion.cols)) * explosion.height,
-            explosion.width,// width of clipping
-            explosion.height,// height of clipping
-            /*for some reason, using potato.x and potato.y cause
-            the potato to go to where it was on the ground from
-            a missed throw if that happened, and not to the player*/
-            (players[potato.player].x + 
-            ((players[potato.player].lastx == -1) ? -25 : 25))
-                - 60, // x pos
-                players[potato.player].y + 35 - 65, // y pos, and I don't know why the
-            // x and y offsets work
-            explosion.width,// width of image
-            explosion.height// height of image
-        );
-
-        ++explosion.frame;
-        
-        // if not done with animation, call function again
-        if(explosion.frame < explosion.rows * explosion.cols)
-            window.setTimeout(explosion.show, 1000 / (fps / 2.2));
-        // the last frame of animation still shows something
-        // so after animation is over, remove explosion
-        else {
-            r.clearRect(0, 0, w, h);
-
-            if(players.length == 2) {
-                document.getElementById("gameOverText").innerHTML = 
-                "You Win!";
-            }
-            else {
-                document.getElementById("gameOverText").innerHTML = 
-                "You Survived!";
-            }
-            // don't show exploded player
-            if(potato.player != clientId)
-                players[clientId].show();
-            // function will make sure to not show exploded player
-            else {
-                if(mobile) {
-                    document.getElementById("gameOverText").innerHTML = 
-                    "You Got<br>Potato'd!";
-                }
-                else {
-                    document.getElementById("gameOverText").innerHTML = 
-                    "You Got Potato'd!";
-                }
-                showOtherPlayers();
-            }
-            
-            // player lost text
-            // css because custom font face with canvas would not work
-            // nevermind, got it to work, but I don't want to change this
-            // because it already works, and I think this is easier
-            document.getElementById("gameOverText").style.visibility = "visible";
-
-            let wait0 = 5;
-            let wait1 = 2;
-            // remove exploded player
-            if(potato.player == clientId) {
-                window.setTimeout(() => {
-                    document.getElementById("gameOverText").innerHTML = 
-                    "Leaving Game";
-
-                    window.setTimeout(() => {
-                        backToMainMenu();
-                    }, 1000 * wait1);
-                }, 1000 * wait0);
-            }
-            else {
-                // start next round
-                // arrow functions coming in clutch!
-                window.setTimeout(() => {
-                    if(players.length == 2) {
-                        document.getElementById("gameOverText").innerHTML = 
-                        "Leaving Game";
-
-                        window.setTimeout(() => {
-                            backToMainMenu();
-                        }, 1000 * wait1);
-                    }
-                    else {
-                        document.getElementById("gameOverText").innerHTML = 
-                        "Starting Next Round";
-
-                        window.setTimeout(() => {
-                            // only have lowest-index client request
-                            // to start a new game
-                            /*lowest-index player will be 0, unless
-                            that player exploded, otherwise lowest
-                            will be 1. So only have to check those
-                            two players*/
-                            for(let i = 0; i < 2; i++) {
-                                if(i != potato.player &&
-                                i == clientId) {
-                                    socket.emit("next round", lobby);
-                                    break;
-                                }
-                            }
-                        // wait a bit longer to give time for
-                        // the exploded player to leave current lobby
-                        // so that they will not receive the socket
-                        // signal that a new game has started
-                        }, 1000 * (wait1 + 1));
-                    }
-                }, 1000 * wait0)
-            }
-        }
-    }
-}; explosion.loadImage();
 
 socket.on("game started", (init) => {
     console.log(init);
@@ -618,6 +486,9 @@ uiImgs.dash.src = "Assets/Skills.png";
 socket.on("server sending render data", (data) => {
     r.clearRect(0, 0, w, h);
 
+    playersRenderData = data.players;// for game over
+    fps = data.fps;
+
     // render other players first
     for(let i = 0; i < data.players.length; i++) {
         if(i != index)
@@ -625,26 +496,13 @@ socket.on("server sending render data", (data) => {
     }
 
     //then render client so that client is always rendered on top
-    for(let i = 0; i < data.players.length; i++) {
-        if(i == index) {
-            x = data.players[i].x;
-            lastx = data.players[i].lastx;
-            showPlayer(data.players[i], i);
-        }
-    }
+    x = data.players[index].x;
+    lastx = data.players[index].lastx;
+    showPlayer(data.players[index], index);
 
     // potato
-    r.drawImage(
-        potatoImg, // img
-        (data.potato.dir == 1) ? 0 : data.potato.size, // clip x start
-        0, // clip y start
-        data.potato.size, // clip x end
-        data.potato.size, // clip y end
-        data.potato.x - (data.potato.size / 2), // x
-        data.potato.y - data.potato.yOffset, // y
-        data.potato.size, // width 
-        data.potato.size); // height
-    
+    showPotato(data.potato);
+    potatoRenderData = data.potato;// for game over    
     potatoPlayer = data.potato.player;
     
     // ui time left
@@ -695,6 +553,19 @@ function showPlayer(player, playerIndex) {
         player.width,// width of image
         player.height// height of image
     );
+}
+
+function showPotato(data) {
+    r.drawImage(
+        potatoImg, // img
+        (data.dir == 1) ? 0 : data.size, // clip x start
+        0, // clip y start
+        data.size, // clip x end
+        data.size, // clip y end
+        data.x - (data.size / 2), // x
+        data.y - data.yOffset, // y
+        data.size, // width
+        data.size); // height
 }
 
 function showUiTime(frame) {
@@ -753,3 +624,171 @@ function showUiDash(frame) {
         uiData.general.height);
     r.globalAlpha = 1;
 }
+
+function removeListeners() {
+    if(!mobile) {
+        document.removeEventListener("keydown", press);
+        document.removeEventListener("keyup", release);
+        document.removeEventListener("mousemove", mouseMoved);
+        document.removeEventListener("mousedown", mouseDown);
+    }
+    // else {
+    //     document.removeEventListener("touchstart", mobileDash);
+    //     document.removeEventListener("touchmove", mobileDash);
+    //     document.removeEventListener("touchstart", touched);
+    // }
+}
+
+let explosion = {
+    img: new Image(),
+    width: 153,
+    height: 153,
+    frame: 0,
+    rows: 4,
+    cols: 3,
+    loadImage: function() {
+        this.img.src = "Assets/Explosion.png";
+    },
+    show: function() {
+        r.clearRect(0, 0, w, h);
+        
+        // show players
+        for(let i = 0; i < playersRenderData.length; i++) {
+            showPlayer(playersRenderData[i], i);
+        }
+
+        // show explosion
+        // for some reason this dot doesn't work for this 
+        r.drawImage(
+            explosion.img,// image
+            // clipping x start
+            (Math.floor(explosion.frame / explosion.cols) + 
+            (explosion.frame % explosion.cols -
+            Math.floor(explosion.frame / explosion.cols))) * explosion.width,
+            // clipping y start 
+            (Math.floor(explosion.frame / explosion.cols)) * explosion.height,
+            explosion.width,// width of clipping
+            explosion.height,// height of clipping
+            /*for some reason, using potato.x and potato.y cause
+            the potato to go to where it was on the ground from
+            a missed throw if that happened, and not to the player*/
+            (playersRenderData[potatoRenderData.player].x + 
+            ((playersRenderData[potatoRenderData.player].lastx == -1) ? -25 : 25))
+                - 60, // x pos
+                playersRenderData[potatoRenderData.player].y + 35 - 65, // y pos, and I don't know why the
+            // x and y offsets work
+            explosion.width,// width of image
+            explosion.height// height of image
+        );
+
+        ++explosion.frame;
+        
+        // if not done with animation, call function again
+        if(explosion.frame < explosion.rows * explosion.cols)
+            window.setTimeout(explosion.show, 1000 / 15);
+        // the last frame of animation still shows something
+        // so after animation is over, remove explosion
+        else {
+            r.clearRect(0, 0, w, h);
+
+            if(playersRenderData.length == 2) {
+                document.getElementById("gameOverText").innerHTML = 
+                "You Win!";
+            }
+            else {
+                document.getElementById("gameOverText").innerHTML = 
+                "You Survived!";
+            }
+            // don't show exploded player
+            if(potatoRenderData.player != index)
+                showPlayer(playersRenderData[index], index);
+            // function will make sure to not show exploded player
+            else {
+                if(mobile) {
+                    document.getElementById("gameOverText").innerHTML = 
+                    "You Got<br>Potato'd!";
+                }
+                else {
+                    document.getElementById("gameOverText").innerHTML = 
+                    "You Got Potato'd!";
+                }
+                
+                for(let i = 0; i < playersRenderData.length; i++) {
+                    showPlayer(playersRenderData[i], i);
+                }
+            }
+            
+            // player lost text
+            // css because custom font face with canvas would not work
+            // nevermind, got it to work, but I don't want to change this
+            // because it already works, and I think this is easier
+            document.getElementById("gameOverText").style.visibility = "visible";
+
+            let wait0 = 5;
+            let wait1 = 2;
+            // remove exploded player
+            if(potatoRenderData.player == index) {
+                window.setTimeout(() => {
+                    document.getElementById("gameOverText").innerHTML = 
+                    "Leaving Game";
+
+                    window.setTimeout(() => {
+                        backToMainMenu();
+                    }, 1000 * wait1);
+                }, 1000 * wait0);
+            }
+            else {
+                // start next round
+                // arrow functions coming in clutch!
+                window.setTimeout(() => {
+                    if(playersRenderData.length == 2) {
+                        document.getElementById("gameOverText").innerHTML = 
+                        "Leaving Game";
+
+                        window.setTimeout(() => {
+                            backToMainMenu();
+                        }, 1000 * wait1);
+                    }
+                    else {
+                        document.getElementById("gameOverText").innerHTML = 
+                        "Starting Next Round";
+
+                        window.setTimeout(() => {
+                            // only have lowest-index client request
+                            // to start a new game
+                            /*lowest-index player will be 0, unless
+                            that player exploded, otherwise lowest
+                            will be 1. So only have to check those
+                            two players*/
+                            for(let i = 0; i < 2; i++) {
+                                if(i != potatoRenderData.player &&
+                                i == index) {
+                                    socket.emit("next round", lobby);
+                                    break;
+                                }
+                            }
+                        // wait a bit longer to give time for
+                        // the exploded player to leave current lobby
+                        // so that they will not receive the socket
+                        // signal that a new game has started
+                        }, 1000 * (wait1 + 1));
+                    }
+                }, 1000 * wait0)
+            }
+        }
+    }
+}; explosion.loadImage();
+
+socket.on("game over", () => {
+    removeListeners();
+
+    r.clearRect(0, 0, w, h);
+    for(let i = 0; i < playersRenderData.length; i++) {
+        playersRenderData[i].inDash = false;
+        showPlayer(playersRenderData[i], i);
+    }
+
+    showPotato(potatoRenderData);
+
+    window.setTimeout(explosion.show, 500);
+});

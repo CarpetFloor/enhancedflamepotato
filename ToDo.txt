@@ -3,11 +3,12 @@ SMALL GOALS:
 -Game ends
 -Kick players when one player leaves
 -Mobile controls
--Add flaming potato to main menu
--Make all indentation of server.js 4
+-Make sure the player that starts with potato is random (use commented line)
 
 
 ADDITIONAL STUFF GOALS:
+-Make all indentation of server.js 4
+-Add flaming potato to main menu
 -Potato burning effect (so it actually is a flame potato, kind of actually like what the 
     name of this game is)
 -Potato hit player impact effect
@@ -19,7 +20,7 @@ ADDITIONAL STUFF GOALS:
     too long of a recharge. Basically, make it long enough so that it can't be spammed and so 
     that it should be used in a more tactical and thoughtful manner; but make it fast enough so
     that it can be used multiple times in the game rather than just like once or twice.
--Custom CSV settings file to read and write from, and even allow in game to have different games
+-Settings
 -More player characters
 -More maps
 -Can change name
