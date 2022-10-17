@@ -524,7 +524,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on("next round", (lobby) => {
-    // FINISH
+    // reset server stuff
+    potatos[lobby] = new Potato;
+    potatos[lobby].lobby = lobby;
+    let interval;
+    intervals[lobby] = interval;
+    overs[lobby] = false;
+    gameFrames[lobby] = 0;
 
     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
@@ -683,7 +689,7 @@ function touching(fromX, fromY, toX, toY) {
       Math.pow(Math.abs(toX - fromX), 2)
       +
       Math.pow(Math.abs(toY - fromY), 2)
-  ) < 50);
+  ) < 100);
 }
 
 // contains all data for each client to set up the game
