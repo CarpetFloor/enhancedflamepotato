@@ -120,8 +120,6 @@ let dashEffectC = document.getElementById("dashEffect");
 let dashEffectR = dashEffectC.getContext("2d");
 let w = -1;
 let h = -1;
-let playerColors = ["yellow", "lime", "cornflowerBlue", "red"];
-let playerNames = ["yellow", "green", "blue", "red"];
 let maxGameFrame = -1;
 let maxDashWaitFrame = -1;
 let previousInDash = false;
@@ -541,7 +539,8 @@ function showPlayer(player, playerIndex) {
         let move = player.maxSkins - playerIndex;
         clipx += (move + (move - 1)) * player.width;
     }
-
+ 
+    // player
     r.drawImage(
         playerImg,// image
         clipx,// cliiping x start
@@ -553,6 +552,41 @@ function showPlayer(player, playerIndex) {
         player.width,// width of image
         player.height// height of image
     );
+
+    // name tag
+    r.globalAlpha = uiData.transparency;
+    r.fillStyle = "black"
+
+    let width = 47;
+    let height = 25;
+
+    // background
+    r.fillRect(
+    player.x - (width / 2), 
+    player.y - (player.height / 2) - (height / 2) - 18,
+    width,
+    height);
+    
+    r.font = "30px VT323";
+    // make client name tag a different color
+    if(playerIndex == index) {
+        r.fillStyle = "#EC407A";
+
+        r.fillText(
+            "YOU", 
+            player.x - (width / 2) + 5, 
+            player.y - (player.height / 2) - (height / 2) + 2);
+    }
+    else {
+        r.fillStyle = "white";
+
+        r.fillText(
+            player.name, 
+            player.x - (width / 2) + 5, 
+            player.y - (player.height / 2) - (height / 2) + 2);
+    }
+
+    r.globalAlpha = 1;
 }
 
 function showPotato(data) {

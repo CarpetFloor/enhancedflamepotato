@@ -20,7 +20,8 @@ app.get('/', (req, res) => {
 });
 
 function User(id) {
-  this.mobile = false
+  this.name = "Name",
+  this.mobile = false,
   this.id = id,
   this.skin = -1,
   this.lobby = "0", // 0 is main lobby players are in when not playing a game
@@ -793,6 +794,7 @@ function gameMapData(lobby) {
 
 // object for holding data to send to each client to render a player
 function RenderPlayer() {
+  this.name = "",
   this.x = w + 10, 
   this.y = h + 10, 
   this.width = -1, 
@@ -837,6 +839,7 @@ function gameLoop(lobby) {
   for(let i = 0; i < lobbies[lobby].length; i++) {
     renderData.players.push(new RenderPlayer());
 
+    renderData.players[i].name = lobbies[lobby][i].name;
     renderData.players[i].x = lobbies[lobby][i].x;
     renderData.players[i].y = lobbies[lobby][i].y;
     renderData.players[i].width = lobbies[lobby][i].width;

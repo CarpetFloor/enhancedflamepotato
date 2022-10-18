@@ -1,5 +1,5 @@
 SMALL GOALS:
--Next round
+-Name tags (don't make colored)
 -Game ends
 -Kick players when one player leaves
 -Mobile controls
