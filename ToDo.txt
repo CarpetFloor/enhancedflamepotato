@@ -1,30 +1,65 @@
 SMALL GOALS:
--Name tags (don't make colored)
 -Game ends
--Kick players when one player leaves
 -Mobile controls
 -Make sure the player that starts with potato is random (use commented line instead)
 -Make sure that game is normal length(use commented line instead)
 
 
 ADDITIONAL STUFF GOALS:
--Make all indentation of server.js 4
--Add flaming potato to main menu
+-Spectator mode
+    >When player looses round, they are able to watch the rest of the game
+    >Look different than when playing regularly
+    >Allow player to exit to main menu
+    >If watched through the entire game, spectator(s) sent back to lobby with players
+
+-When game is over, send everyone (including spectators) back to lobby to allow playing again
+
+-Character customization menu
+    >Access from main menu or lobby
+    >Where name change is
+    >Where ability selection is
+    >Where player type is
+        -Can be faster but have a larger hitbox (and look bigger)
+        -Can also be slower but have a smaller hitbox (and look smaller)
+
+-Name change
+    >Don't allow multiple players to have the same name
+    >Name should have a length limit that isn't too long (because of name tag)
+    >Can change name at main menu and in lobby
+
 -Potato burning effect (so it actually is a flame potato, kind of actually like what the 
     name of this game is)
+
 -Potato hit player impact effect
--When game is over, send everyone (including spectators) back to lobby to allow playing again
--Possibly add an undo move ability (either have along with dash or choose dash or undo move),
-    where the player can instantly undo the last like 3 moves (frames) they made. There would 
-    be an effect like dash and an icon that recharges like dash, and recharge would be the same
-    as dash. NOTE: all abilities should have the same cooldown adn shouldn't have too slow or 
-    too long of a recharge. Basically, make it long enough so that it can't be spammed and so 
-    that it should be used in a more tactical and thoughtful manner; but make it fast enough so
-    that it can be used multiple times in the game rather than just like once or twice.
--Settings
--More player characters
--More maps
--Can change name
--Spectator mode
+
+-Make main menu look better
+    >Add a flaming potato
+    >Add other cool stuff
+
+-More player skins
+
+-More maps (only visual)
+
+-Different abilities (all have same cooldown)
+    >Can ony choose one ability
+    >Defensive (for when player does not have the potato)
+        -Dash (defualt abilility that original game had)
+        -Undo moves
+        -Invisibility (should be really short)
+        -Shockwave (knock back everyone in a small radius around player)
+    >Offensive (for when player has the potato)
+        -Boomerang (if potato misses while active automatically go back to thrower)
+        -Strong throw (potato throws travel faster and farther while active)
+        -Big potato (potato throw is a hit from farther away while active)
+        -Land mine (while active, when potato misses and is on the ground, if another 
+            player moves near the potato at a radius that is larger than needed for 
+            the throw, that player is given the potato)
+
 -Randomly moving barriers
--Powerups that randomly spawn
+    >Ideas for how they work and what they are here (I have no idea yet)
+
+-Powerups that randomly spawn (should last for a short time)
+    >Super speed
+    >Other powerups here
+
+-Make all indentation of server.js 4
