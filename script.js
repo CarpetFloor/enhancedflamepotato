@@ -562,10 +562,10 @@ function showPlayer(player, playerIndex) {
 
     // background
     r.fillRect(
-    player.x - (width / 2), 
-    player.y - (player.height / 2) - (height / 2) - 18,
-    width,
-    height);
+        player.x - (width / 2), 
+        player.y - (player.height / 2) - (height / 2) - 18,
+        width,
+        height);
     
     r.font = "30px VT323";
     // make client name tag a different color
@@ -825,4 +825,23 @@ socket.on("game over", () => {
     showPotato(potatoRenderData);
 
     window.setTimeout(explosion.show, 500);
+});
+
+// someone left the game, so other players are kicked from game
+socket.on("cancel game", (playerWhoLeft) => {
+    removeListeners();
+
+    // // hide mobile controls and stop getting data from joystick
+    // if(mobile) {
+    //     window.clearInterval(joystickInterval);
+    //     document.getElementById("mobileDashImg").style.visibility = "hidden";
+    //     document.getElementById("joystickContainer").style.visibility = "hidden";
+    // }
+
+    document.getElementById("gameOverText").style.visibility = "hidden";
+
+    window.alert(
+        playerWhoLeft + " left the game, so the game ended.");
+
+    backToMainMenu();
 });

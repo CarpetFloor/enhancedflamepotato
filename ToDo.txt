@@ -3,7 +3,8 @@ SMALL GOALS:
 -Game ends
 -Kick players when one player leaves
 -Mobile controls
--Make sure the player that starts with potato is random (use commented line)
+-Make sure the player that starts with potato is random (use commented line instead)
+-Make sure that game is normal length(use commented line instead)
 
 
 ADDITIONAL STUFF GOALS:

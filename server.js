@@ -357,10 +357,16 @@ io.on('connection', (socket) => {
 
   socket.on("disconnect", () => {
     let id = socket.id;
+    let userIndex = getUserPos(id);
 
     console.log(id + " disconnected");
     // get which lobby disconnected player was from
-    let lobbyRemovePos = parseInt(users[getUserPos(id)].lobby);
+    let lobbyRemovePos = parseInt(users[userIndex].lobby);
+
+    // stop game
+    clearInterval(intervals[lobbyRemovePos]);
+
+    let playerWhoLeft = lobbies[lobbyRemovePos][userIndex].name;
 
     // remove disconnected player from users array
     users.splice(getUserPos(id), 1);
@@ -380,10 +386,8 @@ io.on('connection', (socket) => {
 
     // kick everyone in the lobby if game is running
     if(lobbiesInGame.includes(lobbyRemovePos)) {
-      // kick clients from game
-      /* MAKE WORK
-      io.to(lobbyRemovePos.toString()).emit("cancel game");
-      */
+      // kick players from game
+      io.to(lobbyRemovePos.toString()).emit("cancel game", playerWhoLeft);
 
       // remove lobby from lobbiesInGame
       for(let i = 0; i < lobbiesInGame.length; i++) {
@@ -643,7 +647,6 @@ function removeFromMainLobby(id) {
 }
 
 function removeFromLobby(id) {
-  let lobby = -1;
   for(let i = 1; i <= lobbies.length - 1; i++) {
     for(let j = 0; j <= lobbies[i].length - 1; j++) {
       if(lobbies[i][j].id == id) {
