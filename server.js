@@ -363,13 +363,11 @@ io.on('connection', (socket) => {
     // get which lobby disconnected player was from
     let lobbyRemovePos = parseInt(users[userIndex].lobby);
 
-    // stop game
-    clearInterval(intervals[lobbyRemovePos]);
-
     let playerWhoLeft = lobbies[lobbyRemovePos][userIndex].name;
 
     // remove disconnected player from users array
     users.splice(getUserPos(id), 1);
+    // 
     // remove disconnected player from lobbies array
     // if else because removeFromLobby removes that lobby array
     // if it is empty, but main lobby array never is removed
@@ -386,16 +384,18 @@ io.on('connection', (socket) => {
 
     // kick everyone in the lobby if game is running
     if(lobbiesInGame.includes(lobbyRemovePos)) {
+      // stop game
+      clearInterval(intervals[lobbyRemovePos]);
+
+      // remove game stuff
+      // because it will be created again when a new game is created
+      removeGameStuff(lobbyRemovePos);
+
       // kick players from game
       io.to(lobbyRemovePos.toString()).emit("cancel game", playerWhoLeft);
 
       // remove lobby from lobbiesInGame
-      for(let i = 0; i < lobbiesInGame.length; i++) {
-        if(lobbiesInGame[i] == lobbyRemovePos) {
-          lobbiesInGame.splice(i, 1);
-          break;
-        }
-      }
+      lobbiesInGame.splice(lobbyRemovePos, 1);
     }
     else
       giveUpdatedPlayerList(lobbyRemovePos);
@@ -518,7 +518,6 @@ io.on('connection', (socket) => {
       overs.push(false);
       gameFrames.push(0);
       maxGameFrames.push(lobbies[lobby].length * fps * gameLengthPerPlayer);
-      uis.push();
 
       io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
@@ -529,7 +528,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on("next round", (lobby) => {
-    // reset server stuff
+    // reset game stuff
     potatos[lobby] = new Potato;
     potatos[lobby].lobby = lobby;
     let interval;
@@ -629,6 +628,15 @@ http.listen(process.env.PORT || port, () => {
   console.log(`Socket.IO server running at http://localhost:${port}/`);
   console.log("");
 });
+
+function removeGameStuff(lobby) {
+    lobbiesInGame.splice(lobby, 1);
+    potatos.splice(lobby, 1);
+    intervals.splice(lobby, 1);
+    overs.splice(lobby, 1);
+    gameFrames.splice(lobby, 1);
+    maxGameFrames.splice(lobby, 1);
+}
 
 // get position in users array based off of user id
 function getUserPos(id) {
@@ -859,6 +867,7 @@ function gameLoop(lobby) {
 
   if(gameFrames[lobby] == maxGameFrames[lobby]) {
     clearInterval(intervals[lobby]);
+    removeGameStuff(lobby);
 
     io.to(lobby.toString()).emit("game over");
   }
