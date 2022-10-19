@@ -347,9 +347,10 @@ let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 10;
 let startWait = 500;
 let fps = 60;
-let gameLengthPerPlayer = 5;// in seconds
+let gameLengthPerPlayer = 4;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
-let maxDashWaitFrame = fps * 5;
+let maxDashWaitFrame = fps * 3;
+let border = 200;
 // 13 skins
 /*
 Skins laid out horizontally, with top row being facing left and bottom row facing right
@@ -395,7 +396,7 @@ io.on('connection', (socket) => {
     if(lobbiesInGame.includes(lobbyRemovePos)) {
       // stop game
       clearInterval(intervals[lobbyRemovePos]);
-      resetPlayers(lobby);
+      resetPlayers(lobby, true);
 
       // remove game stuff
       // because it will be created again when a new game is created
@@ -789,14 +790,11 @@ function gameMapData(lobby) {
     }
 
     // player pos
-    let border = 200;
     for(let i = 0; i < lobbies[lobby].length; i++) {
-        lobbies[lobby][i].player = true;
+        lobbies[lobby][i].playing = true;
 
-        lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) + 
-            border);
-        lobbies[lobby][0].y = Math.floor((Math.random() * (data.canvas.h - border)) + 
-            border);
+        lobbies[lobby][i].x = Math.floor((Math.random() * (w - border)) + border);
+        lobbies[lobby][i].y = Math.floor((Math.random() * (h - border)) + border);
         // don't check for if too close to another player with first player
         // if(i == 0) {
         //   lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) + 
@@ -912,7 +910,7 @@ function gameLoop(lobby) {
 
   if(gameFrames[lobby] >= maxGameFrames[lobby]) {
     clearInterval(intervals[lobby]);
-    resetPlayers(lobby);
+    resetPlayers(lobby, false);
 
     // make player who lost round a spectator
     lobbies[lobby][potatos[lobby].player].playing = false;
@@ -926,6 +924,8 @@ function gameLoop(lobby) {
     }
 
     if(playersCount == 1) {
+        resetPlayers(lobby, true);
+
         removeGameStuff(lobby);
     }
     else {
@@ -951,33 +951,43 @@ function nextRound(lobby) {
 
     // give potato to new person
     // set who starts with the potato
-    let playersCount = 0;
+    let playingPlayers = [];
     for(let i = 0; i < lobbies[lobby].length; i++) {
-        if(lobbies[lobby][i].playing)
-            ++playersCount;
+        if(lobbies[lobby][i].playing) {
+            playingPlayers.push(i);
+
+            lobbies[lobby][i].x = Math.floor((Math.random() * (w - border)) + border);
+            lobbies[lobby][i].y = Math.floor((Math.random() * (h - border)) + border);
+        }
     }
 
-    potatos[lobby].player = Math.floor(Math.random() * playersCount);
+    potatos[lobby].player = playingPlayers[
+        Math.floor(Math.random() * playingPlayers.length)];
     // potatos[lobby].player = 1;
     potatos[lobby].attached = true;
     // set position of potato to position of the player who has it
     potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
     potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
 
-    io.to(lobby.toString()).emit("game started", gameMapData(lobby));
+    io.to(lobby.toString()).emit("next round");
 
     setTimeout(() => {
       intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
     }, startWait);
 }
 
-function resetPlayers(lobby) {
+function resetPlayers(lobby, gameOver) {
     for(let i = 0; i < lobbies[lobby].length; i++) {
-        lobbies[lobby][i].animationFrame = 0,
-        lobbies[lobby][i].inDash = false,
-        lobbies[lobby][i].dashFrame = 0,
+        if(gameOver) {
+            lobbies[lobby][i].playing = true;
+        }
+        
+        lobbies[lobby][i].animationFrame = 0;
+        lobbies[lobby][i].inDash = false;
+        //lobbies[lobby][i].dashFrame = 0;
         lobbies[lobby][i].lastx = 0;
         lobbies[lobby][i].dirx = 0;
         lobbies[lobby][i].diry = 0;
+        lobbies[lobby][i].dashWaitFrame = maxDashWaitFrame;
     }
 }

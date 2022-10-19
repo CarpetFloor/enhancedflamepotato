@@ -149,6 +149,7 @@ function backToMainMenu() {
 }
 
 function tryToStartGame() {
+    console.log("trying to start", lobby);
     socket.emit("start game attempt", lobby);
 }
 
@@ -176,8 +177,9 @@ let potatoPlayer = -1;
 let playersRenderData;
 let potatoRenderData;
 let fps = -1;
-let player = true;// if playing or spectating
+let playing = true;// if playing or spectating
 let numPlayers = 0;
+let goBackToLobby = -1;
 
 let ui = { 
     width: 112,
@@ -328,13 +330,17 @@ let impact = {
 socket.on("game started", (init) => {
     console.log(init);
 
+    playing = true;
+    potatoRenderData = -1;
+
+    /* do this at start of game so that when new player gets potato
+    in the next round, the potato hit effect will not show up*/
+
     // set index for when sending data to server server will know who is sending stuff
     for(let i = 0; i < init.clients.length; i++) {
         if(init.clients[i].id == id)
             index = i;
     }
-
-    playing = init.clients[index].playing;
 
     maxGameFrame = init.maxGameFrame;
     maxDashWaitFrame = init.maxDashWaitFrame;
@@ -383,6 +389,16 @@ socket.on("game started", (init) => {
 
     window.setTimeout(map.show, init.startWait);// for some reason, map.show is not able
     // to draw anything unless it is called from a window.setTimeout()
+});
+
+socket.on("next round", () => {
+    document.getElementById("gameOverText").style.visibility = "hidden";
+    explosion.frame = 0;
+
+    potatoRenderData = -1;
+
+    if(playing)
+        startGame();
 });
 
 // add event listeners
@@ -558,11 +574,11 @@ socket.on("server sending render data", (data) => {
 
     let impactShow = false;
     // check if potato throw hit someone
-    if(!(typeof potatoRenderData === "undefined")) {
-        if(potatoRenderData.player != data.potato.player) {
-            impact.animationFrame = 0;
-            impactShow = true;
-        }
+    if((potatoRenderData.player != data.potato.player) && 
+    potatoRenderData != -1) {
+        
+        impact.animationFrame = 0;
+        impactShow = true;
     }
 
     playersRenderData = data.players;// for game over
@@ -597,7 +613,8 @@ socket.on("server sending render data", (data) => {
     showUiTime(data.gameFrame);
 
     // ui dash
-    showUiDash(data.players[index].dashWaitFrame);
+    if(playing)
+        showUiDash(data.players[index].dashWaitFrame);
 });
 
 function showPlayer(player, playerIndex) {
@@ -841,7 +858,8 @@ let explosion = {
         
         // show players
         for(let i = 0; i < playersRenderData.length; i++) {
-            showPlayer(playersRenderData[i], i);
+            if(playersRenderData[i].playing)
+                showPlayer(playersRenderData[i], i);
         }
 
         // show explosion
@@ -871,30 +889,31 @@ let explosion = {
         ++explosion.frame;
         
         // if not done with animation, call function again
-        if(explosion.frame < explosion.rows * explosion.cols)
+        if(explosion.frame < explosion.rows * explosion.cols) {
             window.setTimeout(explosion.show, 1000 / 15);
-        // the last frame of animation still shows something
-        // so after animation is over, remove explosion
+        }
         else {
-            r.clearRect(0, 0, w, h);
-
-            if(numPlayers == 1) {
+            if(numPlayers == 1 && playing) {
                 document.getElementById("gameOverText").innerHTML = 
                 "You Win!";
             }
-            else {
+            else if(playing) {
                 document.getElementById("gameOverText").innerHTML = 
                 "You Survived!";
             }
 
+            r.clearRect(0, 0, w, h);
+
             for(let i = 0; i < playersRenderData.length; i++) {
                 // don't show any player that got exploded
-                if(potatoRenderData.player != i && playersRenderData[i].playing)
+                if((potatoRenderData.player != i) && playersRenderData[i].playing)
                     showPlayer(playersRenderData[i], i);
             }
 
-            if(potatoRenderData.player == index)
+            if(potatoRenderData.player == index) {
+                playing = false;
                 document.getElementById("gameOverText").innerHTML = "You Got Potato'd!";
+            }
 
             // // don't show exploded player
             // if(potatoRenderData.player != index)
@@ -927,54 +946,80 @@ let explosion = {
 
             let wait0 = 5;
             let wait1 = 2;
-            // remove exploded player
-            if(potatoRenderData.player == index) {
-                window.setTimeout(() => {
-                    document.getElementById("gameOverText").innerHTML = 
-                    "Now Spectating";
-
-                    // window.setTimeout(() => {
-                    //     backToMainMenu();
-                    // }, 1000 * wait1);
-                }, 1000 * wait0);
-            }
-            else {
-                // start next round
-                // arrow functions coming in clutch!
-                window.setTimeout(() => {
-                    if(numPlayers == 1) {
+            if(numPlayers > 1) {
+                if(potatoRenderData.player == index) {
+                    window.setTimeout(() => {
                         document.getElementById("gameOverText").innerHTML = 
-                        "Leaving Game";
+                        "Spectating";
 
-                        window.setTimeout(() => {
-                            backToMainMenu();
-                        }, 1000 * wait1);
-                    }
-                    else {
+                        // window.setTimeout(() => {
+                        //     backToMainMenu();
+                        // }, 1000 * wait1);
+                    }, 1000 * wait0);
+                }
+                else {
+                    // start next round
+                    window.setTimeout(() => {
+                        // if(numPlayers == 1) {
+                        //     document.getElementById("gameOverText").innerHTML = 
+                        //     "Leaving Game";
+
+                        //     window.setTimeout(() => {
+                        //         backToMainMenu();
+                        //     }, 1000 * wait1);
+                        // }
+                        // else {
                         document.getElementById("gameOverText").innerHTML = 
                         "Starting Next Round";
 
-                        // window.setTimeout(() => {
-                        //     // only have lowest-index client request
-                        //     // to start a new game
-                        //     /*lowest-index player will be 0, unless
-                        //     that player exploded, otherwise lowest
-                        //     will be 1. So only have to check those
-                        //     two players*/
-                        //     for(let i = 0; i < 2; i++) {
-                        //         if(i != potatoRenderData.player &&
-                        //         i == index) {
-                        //             socket.emit("next round", lobby);
-                        //             break;
-                        //         }
-                        //     }
-                        // // wait a bit longer to give time for
-                        // // the exploded player to leave current lobby
-                        // // so that they will not receive the socket
-                        // // signal that a new game has started
-                        // }, 1000 * (wait1 + 1));
-                    }
-                }, 1000 * wait0)
+                            // window.setTimeout(() => {
+                            //     // only have lowest-index client request
+                            //     // to start a new game
+                            //     /*lowest-index player will be 0, unless
+                            //     that player exploded, otherwise lowest
+                            //     will be 1. So only have to check those
+                            //     two players*/
+                            //     for(let i = 0; i < 2; i++) {
+                            //         if(i != potatoRenderData.player &&
+                            //         i == index) {
+                            //             socket.emit("next round", lobby);
+                            //             break;
+                            //         }
+                            //     }
+                            // // wait a bit longer to give time for
+                            // // the exploded player to leave current lobby
+                            // // so that they will not receive the socket
+                            // // signal that a new game has started
+                            // }, 1000 * (wait1 + 1));
+                        //}
+                    }, 1000 * wait0);
+                }
+            }
+            // game is over for everyone
+            else {
+                window.setTimeout(() => {
+                    goBackToLobby = lobby;
+
+                    document.getElementById("gameOverText").innerHTML = "Leaving Game";
+                
+                    window.setTimeout(() => {
+                        document.getElementById("gameOverText").style.visibility = "hidden";
+                        mapR.clearRect(0, 0, w, h);
+                        r.clearRect(0, 0, w, h);
+                        dashEffectR.clearRect(0, 0, w, h);                       
+
+                        if(index != 0) {
+                            backToMainMenu();
+
+                            window.setTimeout(() => {
+                                console.log("here")
+                                socket.emit("join lobby", id, goBackToLobby);
+                            }, 200);
+                        }
+                        else
+                            showLobby();
+                    }, 1000 * wait1);
+                }, 1000 * wait0);
             }
         }
     }
@@ -987,7 +1032,8 @@ socket.on("game over", (playersCount) => {
     r.clearRect(0, 0, w, h);
     for(let i = 0; i < playersRenderData.length; i++) {
         playersRenderData[i].inDash = false;
-        showPlayer(playersRenderData[i], i);
+        if(playersRenderData[i].playing)
+            showPlayer(playersRenderData[i], i);
     }
 
     showPotato(potatoRenderData);
