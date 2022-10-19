@@ -62,7 +62,7 @@ socket.on("set lobby names", (players, currentLobby) => {
         document.getElementById("gameId").innerHTML = "GameID: " + 
         currentLobby;
         // set correct c1ient name in lobby menu
-        document.getElementById("youName").innerHTML = id;
+        document.getElementById("youName").innerHTML = players[index];
 
         // clear current player names
         let parent = document.getElementById("lobbyPlayers");

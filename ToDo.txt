@@ -1,5 +1,4 @@
 SMALL GOALS:
--Game ends
 -Mobile controls
 -Make sure the player that starts with potato is random (use commented line instead)
 -Make sure that game is normal length(use commented line instead)

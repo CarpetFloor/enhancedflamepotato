@@ -688,7 +688,7 @@ function giveUpdatedPlayerList(currentLobby) {
     let ids = [];
 
     for(let i = 0; i <= lobbies[currentLobby].length - 1; i++) {
-      ids.push(lobbies[currentLobby][i].id);
+      ids.push(lobbies[currentLobby][i].name);
     }
 
     io.to(currentLobby.toString()).emit("set lobby names", ids, currentLobby);
