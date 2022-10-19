@@ -1,5 +1,4 @@
 SMALL GOALS:
--more player skins
 -Make mobile friendly
 -Fix player name being off-center
 
@@ -23,9 +22,6 @@ ADDITIONAL STUFF GOALS:
 
 -Name change
     >Can change in lobby
-
--Potato burning effect (so it actually is a flame potato, kind of actually like what the 
-    name of this game is)
 
 -Potato hit player impact effect
 

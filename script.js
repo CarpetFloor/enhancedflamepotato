@@ -298,6 +298,17 @@ let map = {
     }
 }; map.loadImage();
 
+let flame = {
+    img: new Image(),
+    width: 72,
+    height: 96,
+    animationFrame: 0,
+    maxAnimationFrame: 7,
+    loadImage: function() {
+        flame.img.src = "Assets/Flame.png";
+    }
+}; flame.loadImage();
+
 socket.on("game started", (init) => {
     console.log(init);
 
@@ -317,10 +328,12 @@ socket.on("game started", (init) => {
     
     // for some reason after the game ends and client is sent back to the main
     // menu, the mobile controls images show up
-    if(!mobile) {
-        document.getElementById("mobileDashImg").style.visibility = "hidden";
-        document.getElementById("joystickContainer").style.visibility = "hidden";
-    }
+    // if(!mobile) {
+    //     document.getElementById("mobileDashImg").style.visibility = "hidden";
+    //     document.getElementById("joystickContainer").style.visibility = "hidden";
+    // }
+    document.getElementById("mobileDashImg").style.visibility = "hidden";
+    document.getElementById("joystickContainer").style.visibility = "hidden";
 
     mapR.clearRect(0, 0, w, h);
     r.clearRect(0, 0, w, h);
@@ -334,7 +347,6 @@ socket.on("game started", (init) => {
     mapC.height = h;
     c.width = w;
     c.height = h;
-    // with more players dash stuff here
     dashEffectC.width = w;
     dashEffectC.height = h;
 
@@ -527,6 +539,8 @@ socket.on("server sending render data", (data) => {
     r.clearRect(0, 0, w, h);
 
     playersRenderData = data.players;// for game over
+    potatoRenderData = data.potato;   
+    potatoPlayer = data.potato.player;
     fps = data.fps;
 
     // render other players first
@@ -540,10 +554,11 @@ socket.on("server sending render data", (data) => {
     lastx = data.players[index].lastx;
     showPlayer(data.players[index], index);
 
+    // potato flame
+    showPotatoFlame();
+
     // potato
     showPotato(data.potato);
-    potatoRenderData = data.potato;// for game over    
-    potatoPlayer = data.potato.player;
     
     // ui time left
     showUiTime(data.gameFrame);
@@ -663,6 +678,27 @@ function showPotato(data) {
         data.y - data.yOffset, // y
         data.size, // width
         data.size); // height
+}
+
+function showPotatoFlame() {
+    r.globalAlpha = 0.8;
+
+    r.drawImage(
+        flame.img, // img
+        flame.animationFrame * flame.width, // clip x start
+        0, // clip y start
+        flame.width, // clip x end
+        flame.height, // clip y end
+        potatoRenderData.x - Math.floor(flame.width / 2), // x
+        potatoRenderData.y - Math.floor(flame.height * 1.12), // y
+        flame.width, // width
+        flame.height); // height
+    
+    ++flame.animationFrame;
+    if(flame.animationFrame > flame.maxAnimationFrame)
+        flame.animationFrame = 0;
+    
+    r.globalAlpha = 1;
 }
 
 function showUiTime(frame) {
