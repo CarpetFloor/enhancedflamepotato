@@ -557,7 +557,12 @@ function showPlayer(player, playerIndex) {
     r.globalAlpha = uiData.transparency;
     r.fillStyle = "black"
 
-    let width = 47;
+    let nameText = "You";
+
+    if(playerIndex == index)
+        nameText = player.name;
+
+    let width = 16 * nameText.length;
     let height = 25;
 
     // background
@@ -566,25 +571,19 @@ function showPlayer(player, playerIndex) {
         player.y - (player.height / 2) - (height / 2) - 18,
         width,
         height);
-    
+
     r.font = "30px VT323";
     // make client name tag a different color
-    if(playerIndex == index) {
+    if(playerIndex == index)
         r.fillStyle = "#EC407A";
-
-        r.fillText(
-            "YOU", 
-            player.x - (width / 2) + 5, 
-            player.y - (player.height / 2) - (height / 2) + 2);
-    }
-    else {
+    else
         r.fillStyle = "white";
 
-        r.fillText(
-            player.name, 
-            player.x - (width / 2) + 5, 
-            player.y - (player.height / 2) - (height / 2) + 2);
-    }
+    r.fillText(
+        nameText, 
+        player.x - (width / 2) + 5, 
+        player.y - (player.height / 2) - (height / 2) + 2);
+    console.log("b");
 
     r.globalAlpha = 1;
 }
