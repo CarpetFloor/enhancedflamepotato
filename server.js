@@ -528,32 +528,32 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on("next round", (lobby) => {
-    // reset game stuff
-    potatos[lobby] = new Potato;
-    potatos[lobby].lobby = lobby;
-    let interval;
-    intervals[lobby] = interval;
-    overs[lobby] = false;
-    gameFrames[lobby] = 0;
-    // set new game length based off of players
-    maxGameFrames[lobby] = (lobbies[lobby].length * fps * gameLengthPerPlayer);
+//   socket.on("next round", (lobby) => {
+//     // reset game stuff
+//     potatos[lobby] = new Potato;
+//     potatos[lobby].lobby = lobby;
+//     let interval;
+//     intervals[lobby] = interval;
+//     overs[lobby] = false;
+//     gameFrames[lobby] = 0;
+//     // set new game length based off of players
+//     maxGameFrames[lobby] = (lobbies[lobby].length * fps * gameLengthPerPlayer);
 
-    // give potato to new person
-    // set who starts with the potato
-    potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
-    // potatos[lobby].player = 1;
-    potatos[lobby].attached = true;
-    // set position of potato to position of the player who has it
-    potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
-    potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
+//     // give potato to new person
+//     // set who starts with the potato
+//     potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
+//     // potatos[lobby].player = 1;
+//     potatos[lobby].attached = true;
+//     // set position of potato to position of the player who has it
+//     potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
+//     potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
 
-    io.to(lobby.toString()).emit("game started", gameMapData(lobby));
+//     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
-    setTimeout(() => {
-      intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
-    }, startWait);
-  });
+//     setTimeout(() => {
+//       intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
+//     }, startWait);
+//   });
 
   // client letting server know a key/ input was pressed
   socket.on("player pressed", (pressed, lobby, index) => {
@@ -895,7 +895,7 @@ function gameLoop(lobby) {
 
   io.to(lobby.toString()).emit("server sending render data", (renderData));
 
-  if(gameFrames[lobby] == maxGameFrames[lobby]) {
+  if(gameFrames[lobby] >= maxGameFrames[lobby]) {
     clearInterval(intervals[lobby]);
     
     // remove stuff when game completely over
@@ -903,7 +903,39 @@ function gameLoop(lobby) {
         console.log("yes");
         removeGameStuff(lobby);
     }
+    else {
+        setTimeout(() => {
+            nextRound(lobby);
+        }, 12000)
+    }
 
     io.to(lobby.toString()).emit("game over");
   }
+}
+
+function nextRound(lobby) {
+    // reset game stuff
+    potatos[lobby] = new Potato;
+    potatos[lobby].lobby = lobby;
+    let interval;
+    intervals[lobby] = interval;
+    overs[lobby] = false;
+    gameFrames[lobby] = 0;
+    // set new game length based off of players
+    maxGameFrames[lobby] = (lobbies[lobby].length * fps * gameLengthPerPlayer);
+
+    // give potato to new person
+    // set who starts with the potato
+    potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
+    // potatos[lobby].player = 1;
+    potatos[lobby].attached = true;
+    // set position of potato to position of the player who has it
+    potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
+    potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
+
+    io.to(lobby.toString()).emit("game started", gameMapData(lobby));
+
+    setTimeout(() => {
+      intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
+    }, startWait);
 }

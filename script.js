@@ -774,24 +774,38 @@ let explosion = {
                 document.getElementById("gameOverText").innerHTML = 
                 "You Survived!";
             }
-            // don't show exploded player
-            if(potatoRenderData.player != index)
-                showPlayer(playersRenderData[index], index);
-            // function will make sure to not show exploded player
-            else {
-                if(mobile) {
-                    document.getElementById("gameOverText").innerHTML = 
-                    "You Got<br>Potato'd!";
-                }
-                else {
-                    document.getElementById("gameOverText").innerHTML = 
-                    "You Got Potato'd!";
-                }
-                
-                for(let i = 0; i < playersRenderData.length; i++) {
+
+            for(let i = 0; i < playersRenderData.length; i++) {
+                // don't show any player that got exploded
+                if(potatoRenderData.player != i)
                     showPlayer(playersRenderData[i], i);
-                }
             }
+
+            if(potatoRenderData.player == index)
+                document.getElementById("gameOverText").innerHTML = "You Got Potato'd!";
+
+            // // don't show exploded player
+            // if(potatoRenderData.player != index)
+            //     showPlayer(playersRenderData[index], index);
+            // // function will make sure to not show exploded player
+            // else {
+            //     // if(mobile) {
+            //     //     document.getElementById("gameOverText").innerHTML = 
+            //     //     "You Got<br>Potato'd!";
+            //     // }
+            //     // else {
+            //     //     document.getElementById("gameOverText").innerHTML = 
+            //     //     "You Got Potato'd!";
+            //     // }
+            //     document.getElementById("gameOverText").innerHTML = 
+            //         "You Got Potato'd!";
+                
+            //     for(let i = 0; i < playersRenderData.length; i++) {
+            //         // don't show any player that got exploded
+            //         if(potatoRenderData.player != i)
+            //             showPlayer(playersRenderData[i], i);
+            //     }
+            // }
             
             // player lost text
             // css because custom font face with canvas would not work
@@ -828,25 +842,25 @@ let explosion = {
                         document.getElementById("gameOverText").innerHTML = 
                         "Starting Next Round";
 
-                        window.setTimeout(() => {
-                            // only have lowest-index client request
-                            // to start a new game
-                            /*lowest-index player will be 0, unless
-                            that player exploded, otherwise lowest
-                            will be 1. So only have to check those
-                            two players*/
-                            for(let i = 0; i < 2; i++) {
-                                if(i != potatoRenderData.player &&
-                                i == index) {
-                                    socket.emit("next round", lobby);
-                                    break;
-                                }
-                            }
-                        // wait a bit longer to give time for
-                        // the exploded player to leave current lobby
-                        // so that they will not receive the socket
-                        // signal that a new game has started
-                        }, 1000 * (wait1 + 1));
+                        // window.setTimeout(() => {
+                        //     // only have lowest-index client request
+                        //     // to start a new game
+                        //     /*lowest-index player will be 0, unless
+                        //     that player exploded, otherwise lowest
+                        //     will be 1. So only have to check those
+                        //     two players*/
+                        //     for(let i = 0; i < 2; i++) {
+                        //         if(i != potatoRenderData.player &&
+                        //         i == index) {
+                        //             socket.emit("next round", lobby);
+                        //             break;
+                        //         }
+                        //     }
+                        // // wait a bit longer to give time for
+                        // // the exploded player to leave current lobby
+                        // // so that they will not receive the socket
+                        // // signal that a new game has started
+                        // }, 1000 * (wait1 + 1));
                     }
                 }, 1000 * wait0)
             }
