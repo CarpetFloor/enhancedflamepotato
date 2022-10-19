@@ -554,25 +554,26 @@ function showPlayer(player, playerIndex) {
     );
 
     // name tag
-    r.globalAlpha = uiData.transparency;
+    r.globalAlpha = uiData.transparency - 0.2;
     r.fillStyle = "black"
+
+    r.font = "30px VT323";
 
     let nameText = "You";
 
-    if(playerIndex == index)
+    if(playerIndex != index)
         nameText = player.name;
 
-    let width = 16 * nameText.length;
+    let width = 15 * nameText.length;
     let height = 25;
 
     // background
-    r.fillRect(
-        player.x - (width / 2), 
-        player.y - (player.height / 2) - (height / 2) - 18,
-        width,
-        height);
-
-    r.font = "30px VT323";
+    // r.fillRect(
+    //     player.x - (width / 2), 
+    //     player.y - (player.height / 2) - (height / 2) - 18,
+    //     width,
+    //     height);
+    
     // make client name tag a different color
     if(playerIndex == index)
         r.fillStyle = "#EC407A";
@@ -583,7 +584,6 @@ function showPlayer(player, playerIndex) {
         nameText, 
         player.x - (width / 2) + 5, 
         player.y - (player.height / 2) - (height / 2) + 2);
-    console.log("b");
 
     r.globalAlpha = 1;
 }

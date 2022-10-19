@@ -350,6 +350,7 @@ let maxDashWaitFrame = fps * 5;
 io.on('connection', (socket) => {
   console.log(socket.id + " connected");
   users.push(new User(socket.id));
+  users[users.length - 1].name = "idonthavename1234567" + (users.length - 1);
 
   lobbies[0].push(users[users.length - 1]);
   socket.join("0");

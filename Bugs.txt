@@ -1,4 +1,6 @@
 NEW
+-If player leaves while you won part is happening, the animations play when back
+    at main menu
 -Join game text is white on Chrome, but orange on Firefox
 -Server crashes when one player in game tries to leave
 -player rendering is slightly blurry and there is a a small rectange to the top right
