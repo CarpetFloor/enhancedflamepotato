@@ -881,8 +881,8 @@ socket.on("cancel game", (playerWhoLeft) => {
 
     document.getElementById("gameOverText").style.visibility = "hidden";
 
-    window.alert(
-        playerWhoLeft + " left the game, so the game ended.");
+    // window.alert(
+    //     playerWhoLeft + " left the game, so the game ended.");
 
     backToMainMenu();
 });

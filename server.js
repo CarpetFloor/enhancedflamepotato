@@ -343,7 +343,7 @@ let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
 let startWait = 500;
 let fps = 60;
-let gameLengthPerPlayer = 2;//10;// in seconds
+let gameLengthPerPlayer = 10;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 let maxDashWaitFrame = fps * 5;
 
@@ -536,6 +536,17 @@ io.on('connection', (socket) => {
     intervals[lobby] = interval;
     overs[lobby] = false;
     gameFrames[lobby] = 0;
+    // set new game length based off of players
+    maxGameFrames[lobby] = (lobbies[lobby].length * fps * gameLengthPerPlayer);
+
+    // give potato to new person
+    // set who starts with the potato
+    potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
+    // potatos[lobby].player = 1;
+    potatos[lobby].attached = true;
+    // set position of potato to position of the player who has it
+    potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
+    potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
 
     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
 
@@ -808,8 +819,8 @@ function gameMapData(lobby) {
     }
 
     // set who starts with the potato
-    //potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
-    potatos[lobby].player = 1;
+    potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
+    // potatos[lobby].player = 1;
     potatos[lobby].attached = true;
     // set position of potato to position of the player who has it
     potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
@@ -882,7 +893,12 @@ function gameLoop(lobby) {
 
   if(gameFrames[lobby] == maxGameFrames[lobby]) {
     clearInterval(intervals[lobby]);
-    removeGameStuff(lobby);
+    
+    // remove stuff when game completely over
+    if(lobbies[lobby].length == 2) {
+        console.log("yes");
+        removeGameStuff(lobby);
+    }
 
     io.to(lobby.toString()).emit("game over");
   }
