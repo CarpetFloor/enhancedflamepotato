@@ -387,6 +387,7 @@ io.on('connection', (socket) => {
     if(lobbiesInGame.includes(lobbyRemovePos)) {
       // stop game
       clearInterval(intervals[lobbyRemovePos]);
+      resetPlayers(lobby);
 
       // remove game stuff
       // because it will be created again when a new game is created
@@ -567,12 +568,12 @@ io.on('connection', (socket) => {
 
       if((pressed == "up") && !overs[lobby]) {
           lobbies[lobby][index].diry = -1;
-          lobbies[lobby][index].lastDir = 6;
+          // lobbies[lobby][index].lastDir = 6;
       }
 
       if((pressed == "down") && !overs[lobby]) {
           lobbies[lobby][index].diry = 1;
-          lobbies[lobby][index].lastDir = 2;
+          // lobbies[lobby][index].lastDir = 2;
       }
 
       // only allow dash if moving
@@ -585,20 +586,20 @@ io.on('connection', (socket) => {
           lobbies[lobby][index].dashPressed = true;
       }
       // if player moving diagonally, set last dir to be diagonal
-      if((lobbies[lobby][index].dirx != 0 && lobbies[lobby][index].diry != 0) && !overs[lobby]) {
-          if(lobbies[lobby][index].dirx == 1) {
-              if(lobbies[lobby][index].diry == 1)
-                  lobbies[lobby][index].lastDir = 1;
-              else
-                  lobbies[lobby][index].lastDir = 7;
-          }
-          else {
-              if(lobbies[lobby][index].diry == 1)
-                  lobbies[lobby][index].lastDir = 3;
-              else
-                  lobbies[lobby][index].lastDir = 5;
-          }
-      }
+    //   if((lobbies[lobby][index].dirx != 0 && lobbies[lobby][index].diry != 0) && !overs[lobby]) {
+    //       if(lobbies[lobby][index].dirx == 1) {
+    //           if(lobbies[lobby][index].diry == 1)
+    //               lobbies[lobby][index].lastDir = 1;
+    //           else
+    //               lobbies[lobby][index].lastDir = 7;
+    //       }
+    //       else {
+    //           if(lobbies[lobby][index].diry == 1)
+    //               lobbies[lobby][index].lastDir = 3;
+    //           else
+    //               lobbies[lobby][index].lastDir = 5;
+    //       }
+    //   }
   });
 
   // client letting server know a key/ input was pressed
@@ -897,6 +898,7 @@ function gameLoop(lobby) {
 
   if(gameFrames[lobby] >= maxGameFrames[lobby]) {
     clearInterval(intervals[lobby]);
+    resetPlayers(lobby);
     
     // remove stuff when game completely over
     if(lobbies[lobby].length == 2) {
@@ -938,4 +940,15 @@ function nextRound(lobby) {
     setTimeout(() => {
       intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
     }, startWait);
+}
+
+function resetPlayers(lobby) {
+    for(let i = 0; i < lobbies[lobby].length; i++) {
+        lobbies[lobby][i].animationFrame = 0,
+        lobbies[lobby][i].inDash = false,
+        lobbies[lobby][i].dashFrame = 0,
+        lobbies[lobby][i].lastx = 0;
+        lobbies[lobby][i].dirx = 0;
+        lobbies[lobby][i].diry = 0;
+    }
 }
