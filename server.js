@@ -34,8 +34,11 @@ function User(id) {
   this.maxAnimationWaitFrame = 1,
   this.x = w / 2,
   this.y = h / 2,
+  /* old version
   this.width = 64,
-  this.height = 80,
+  this.height = 80,*/
+  this.width = 64,
+  this.height = 96,
   this.diry = 0,
   this.dirx = 0,
   this.lastx = 1,// for setting correct frame direction
@@ -346,6 +349,10 @@ let fps = 60;
 let gameLengthPerPlayer = 5;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 let maxDashWaitFrame = fps * 5;
+// 13 skins
+/*
+Skins laid out horizontally, with top row being facing left and bottom row facing right
+*/
 
 io.on('connection', (socket) => {
   console.log(socket.id + " connected");
@@ -735,7 +742,7 @@ function touching(fromX, fromY, toX, toY) {
 function gameMapData(lobby) {
     // set skins of each client
     for(let i = 0; i < lobbies[lobby].length; i++) {
-        lobbies[lobby][i].skin = Math.floor(Math.random() * 5);
+        lobbies[lobby][i].skin = Math.floor(Math.random() * 13);
     }
 
 
@@ -837,6 +844,7 @@ function gameMapData(lobby) {
 // object for holding data to send to each client to render a player
 function RenderPlayer() {
   this.name = "",
+  this.skin = -1,
   this.x = w + 10, 
   this.y = h + 10, 
   this.width = -1, 
@@ -882,6 +890,7 @@ function gameLoop(lobby) {
     renderData.players.push(new RenderPlayer());
 
     renderData.players[i].name = lobbies[lobby][i].name;
+    renderData.players[i].skin = lobbies[lobby][i].skin;
     renderData.players[i].x = lobbies[lobby][i].x;
     renderData.players[i].y = lobbies[lobby][i].y;
     renderData.players[i].width = lobbies[lobby][i].width;

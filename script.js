@@ -575,22 +575,44 @@ function showPlayer(player, playerIndex) {
     }
 
     // player
-    let clipx = player.width * playerIndex;
 
-    if(player.lastx == -1) {
-        let move = player.maxSkins - playerIndex;
-        clipx += (move + (move - 1)) * player.width;
-    }
- 
-    // player
+    // // old version
+    // let clipx = player.width * playerIndex;
+    
+    // if(player.lastx == -1) {
+    //     let move = player.maxSkins - playerIndex;
+    //     clipx += (move + (move - 1)) * player.width;
+    // }
+    
+    // r.drawImage(
+    //     playerImg,// image
+    //     clipx,// cliiping x start
+    //     player.animationFrame * player.height,// clipping y start
+    //     player.width,// width of clipping
+    //     player.height,// height of clipping
+    //     player.x - (player.width / 2),
+    //     player.y - (player.height / 2),
+    //     player.width,// width of image
+    //     player.height// height of image
+    // );
+
+    // new version
+    let clipYStart = 0;
+
+    if(player.lastx == 1)
+        clipYStart = player.height;
+    
+    //new version
     r.drawImage(
         playerImg,// image
-        clipx,// cliiping x start
-        player.animationFrame * player.height,// clipping y start
+        (player.skin * (player.width * 4)) + 
+        (player.animationFrame * player.width),// clipping x start
+        // there are 4 frames of animation per skin
+        clipYStart,//clipYStart,// clipping y start
         player.width,// width of clipping
         player.height,// height of clipping
-        player.x - (player.width / 2),
-        player.y - (player.height / 2),
+        player.x - (player.width / 2),// x position
+        player.y - (player.height / 2),// y position
         player.width,// width of image
         player.height// height of image
     );
