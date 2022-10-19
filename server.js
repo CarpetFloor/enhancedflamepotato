@@ -340,7 +340,7 @@ let maxGameFrames = ["max game frame"];// what max frame for each game is
 let uis = ["ui"];// contains objects that hold data and functions for ui stuff
 let lobbies = [[]];// contains data for each client
 let lobbiesInGame = [];// which lobbies are in the game
-let maxPlayersPerLobby = 4;
+let maxPlayersPerLobby = 10;
 let startWait = 500;
 let fps = 60;
 let gameLengthPerPlayer = 5;// in seconds
@@ -734,7 +734,7 @@ function touching(fromX, fromY, toX, toY) {
 function gameMapData(lobby) {
     // set skins of each client
     for(let i = 0; i < lobbies[lobby].length; i++) {
-        lobbies[lobby][i].skin = i;
+        lobbies[lobby][i].skin = Math.floor(Math.random() * 5);
     }
 
 
