@@ -1,6 +1,7 @@
 SMALL GOALS:
 -Make mobile friendly
 -Fix player name being off-center
+-Credits on main menu
 
 
 ADDITIONAL STUFF GOALS:

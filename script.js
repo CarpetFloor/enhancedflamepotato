@@ -309,6 +309,19 @@ let flame = {
     }
 }; flame.loadImage();
 
+let impact = {
+    img: new Image(),
+    width: 100,
+    height: 100,
+    rows: 8,
+    cols: 10,
+    animationFrame: 0,
+    maxAnimationFrame: 20,
+    loadImage: function() {
+        impact.img.src = "Assets/Impact.png";
+    }
+}; impact.loadImage();
+
 socket.on("game started", (init) => {
     console.log(init);
 
@@ -538,6 +551,15 @@ uiImgs.dash.src = "Assets/Skills.png";
 socket.on("server sending render data", (data) => {
     r.clearRect(0, 0, w, h);
 
+    let impactShow = false;
+    // check if potato throw hit someone
+    if(!(typeof potatoRenderData === "undefined")) {
+        if(potatoRenderData.player != data.potato.player) {
+            impact.animationFrame = 0;
+            impactShow = true;
+        }
+    }
+
     playersRenderData = data.players;// for game over
     potatoRenderData = data.potato;   
     potatoPlayer = data.potato.player;
@@ -553,6 +575,10 @@ socket.on("server sending render data", (data) => {
     x = data.players[index].x;
     lastx = data.players[index].lastx;
     showPlayer(data.players[index], index);
+
+    if(impactShow || impact.animationFrame > 0) {
+        showImpact(playersRenderData[potatoRenderData.player]);
+    }
 
     // potato flame
     showPotatoFlame();
@@ -663,6 +689,27 @@ function showPlayer(player, playerIndex) {
         nameText, 
         player.x - (width / 2) + 5, 
         player.y - (player.height / 2) - (height / 2) + 2);
+
+    r.globalAlpha = 1;
+}
+
+function showImpact(player) {
+    r.globalAlpha = 0.8
+
+    r.drawImage(
+        impact.img, // img
+        (impact.animationFrame % impact.cols) * impact.width, // clip x start
+        Math.floor(impact.animationFrame / impact.rows) * impact.height, // clip y start
+        impact.width, // clip x end
+        impact.height, // clip y end
+        player.x - Math.floor(impact.width / 2), // x
+        player.y - Math.floor(impact.height / 2), // y
+        impact.width, // width
+        impact.height); // height
+    
+    ++impact.animationFrame;
+    if(impact.animationFrame > impact.maxAnimationFrame)
+        impact.animationFrame = 0;
 
     r.globalAlpha = 1;
 }
