@@ -176,6 +176,8 @@ let potatoPlayer = -1;
 let playersRenderData;
 let potatoRenderData;
 let fps = -1;
+let player = true;// if playing or spectating
+let numPlayers = 0;
 
 let ui = { 
     width: 112,
@@ -294,7 +296,8 @@ let map = {
         document.getElementById("noticeText").style.visibility = "hidden";
         mapLoaded = true;
         
-        startGame();
+        if(playing)
+            startGame();
     }
 }; map.loadImage();
 
@@ -330,6 +333,8 @@ socket.on("game started", (init) => {
         if(init.clients[i].id == id)
             index = i;
     }
+
+    playing = init.clients[index].playing;
 
     maxGameFrame = init.maxGameFrame;
     maxDashWaitFrame = init.maxDashWaitFrame;
@@ -567,14 +572,16 @@ socket.on("server sending render data", (data) => {
 
     // render other players first
     for(let i = 0; i < data.players.length; i++) {
-        if(i != index)
+        if(i != index && data.players[i].playing)
             showPlayer(data.players[i], i);
     }
 
     //then render client so that client is always rendered on top
-    x = data.players[index].x;
-    lastx = data.players[index].lastx;
-    showPlayer(data.players[index], index);
+    if(playing) {
+        x = data.players[index].x;
+        lastx = data.players[index].lastx;
+        showPlayer(data.players[index], index);
+    }
 
     if(impactShow || impact.animationFrame > 0) {
         showImpact(playersRenderData[potatoRenderData.player]);
@@ -681,7 +688,7 @@ function showPlayer(player, playerIndex) {
     
     // make client name tag a different color
     if(playerIndex == index)
-        r.fillStyle = "#EC407A";
+        r.fillStyle = "#DC7633";
     else
         r.fillStyle = "white";
 
@@ -871,7 +878,7 @@ let explosion = {
         else {
             r.clearRect(0, 0, w, h);
 
-            if(playersRenderData.length == 2) {
+            if(numPlayers == 1) {
                 document.getElementById("gameOverText").innerHTML = 
                 "You Win!";
             }
@@ -882,7 +889,7 @@ let explosion = {
 
             for(let i = 0; i < playersRenderData.length; i++) {
                 // don't show any player that got exploded
-                if(potatoRenderData.player != i)
+                if(potatoRenderData.player != i && playersRenderData[i].playing)
                     showPlayer(playersRenderData[i], i);
             }
 
@@ -924,18 +931,18 @@ let explosion = {
             if(potatoRenderData.player == index) {
                 window.setTimeout(() => {
                     document.getElementById("gameOverText").innerHTML = 
-                    "Leaving Game";
+                    "Now Spectating";
 
-                    window.setTimeout(() => {
-                        backToMainMenu();
-                    }, 1000 * wait1);
+                    // window.setTimeout(() => {
+                    //     backToMainMenu();
+                    // }, 1000 * wait1);
                 }, 1000 * wait0);
             }
             else {
                 // start next round
                 // arrow functions coming in clutch!
                 window.setTimeout(() => {
-                    if(playersRenderData.length == 2) {
+                    if(numPlayers == 1) {
                         document.getElementById("gameOverText").innerHTML = 
                         "Leaving Game";
 
@@ -973,8 +980,9 @@ let explosion = {
     }
 }; explosion.loadImage();
 
-socket.on("game over", () => {
+socket.on("game over", (playersCount) => {
     removeListeners();
+    numPlayers = playersCount;
 
     r.clearRect(0, 0, w, h);
     for(let i = 0; i < playersRenderData.length; i++) {
@@ -988,7 +996,7 @@ socket.on("game over", () => {
 });
 
 // someone left the game, so other players are kicked from game
-socket.on("cancel game", (playerWhoLeft) => {
+socket.on("cancel game", () => {
     removeListeners();
 
     // // hide mobile controls and stop getting data from joystick

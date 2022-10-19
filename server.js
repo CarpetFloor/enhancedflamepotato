@@ -21,6 +21,7 @@ app.get('/', (req, res) => {
 
 function User(id) {
   this.name = "Name",
+  this.playing = true,//if playing game or spectating
   this.mobile = false,
   this.id = id,
   this.skin = -1,
@@ -371,7 +372,7 @@ io.on('connection', (socket) => {
     // get which lobby disconnected player was from
     let lobbyRemovePos = parseInt(users[userIndex].lobby);
 
-    let playerWhoLeft = lobbies[lobbyRemovePos][userIndex].name;
+    // let playerWhoLeft = lobbies[lobbyRemovePos][userIndex].name;
 
     // remove disconnected player from users array
     users.splice(getUserPos(id), 1);
@@ -401,7 +402,7 @@ io.on('connection', (socket) => {
       removeGameStuff(lobbyRemovePos);
 
       // kick players from game
-      io.to(lobbyRemovePos.toString()).emit("cancel game", playerWhoLeft);
+      io.to(lobbyRemovePos.toString()).emit("cancel game");
 
       // remove lobby from lobbiesInGame
       lobbiesInGame.splice(lobbyRemovePos, 1);
@@ -790,6 +791,8 @@ function gameMapData(lobby) {
     // player pos
     let border = 200;
     for(let i = 0; i < lobbies[lobby].length; i++) {
+        lobbies[lobby][i].player = true;
+
         lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) + 
             border);
         lobbies[lobby][0].y = Math.floor((Math.random() * (data.canvas.h - border)) + 
@@ -844,6 +847,7 @@ function gameMapData(lobby) {
 // object for holding data to send to each client to render a player
 function RenderPlayer() {
   this.name = "",
+  this.playing = true,
   this.skin = -1,
   this.x = w + 10, 
   this.y = h + 10, 
@@ -890,6 +894,7 @@ function gameLoop(lobby) {
     renderData.players.push(new RenderPlayer());
 
     renderData.players[i].name = lobbies[lobby][i].name;
+    renderData.players[i].playing = lobbies[lobby][i].playing;
     renderData.players[i].skin = lobbies[lobby][i].skin;
     renderData.players[i].x = lobbies[lobby][i].x;
     renderData.players[i].y = lobbies[lobby][i].y;
@@ -908,10 +913,19 @@ function gameLoop(lobby) {
   if(gameFrames[lobby] >= maxGameFrames[lobby]) {
     clearInterval(intervals[lobby]);
     resetPlayers(lobby);
+
+    // make player who lost round a spectator
+    lobbies[lobby][potatos[lobby].player].playing = false;
     
     // remove stuff when game completely over
-    if(lobbies[lobby].length == 2) {
-        console.log("yes");
+
+    let playersCount = 0;
+    for(let i = 0; i < lobbies[lobby].length; i++) {
+        if(lobbies[lobby][i].playing)
+            ++playersCount;
+    }
+
+    if(playersCount == 1) {
         removeGameStuff(lobby);
     }
     else {
@@ -920,7 +934,7 @@ function gameLoop(lobby) {
         }, 12000)
     }
 
-    io.to(lobby.toString()).emit("game over");
+    io.to(lobby.toString()).emit("game over", playersCount);
   }
 }
 
@@ -937,7 +951,13 @@ function nextRound(lobby) {
 
     // give potato to new person
     // set who starts with the potato
-    potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
+    let playersCount = 0;
+    for(let i = 0; i < lobbies[lobby].length; i++) {
+        if(lobbies[lobby][i].playing)
+            ++playersCount;
+    }
+
+    potatos[lobby].player = Math.floor(Math.random() * playersCount);
     // potatos[lobby].player = 1;
     potatos[lobby].attached = true;
     // set position of potato to position of the player who has it
