@@ -1,4 +1,7 @@
 SMALL GOALS:
+-too close at start
+-client not hidden if boom
+-more players and skins
 -Make mobile friendly
 -Fix player name being off-center
 

@@ -343,7 +343,7 @@ let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 4;
 let startWait = 500;
 let fps = 60;
-let gameLengthPerPlayer = 10;// in seconds
+let gameLengthPerPlayer = 5;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 let maxDashWaitFrame = fps * 5;
 
@@ -782,40 +782,44 @@ function gameMapData(lobby) {
     // player pos
     let border = 200;
     for(let i = 0; i < lobbies[lobby].length; i++) {
+        lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) + 
+            border);
+        lobbies[lobby][0].y = Math.floor((Math.random() * (data.canvas.h - border)) + 
+            border);
         // don't check for if too close to another player with first player
-        if(i == 0) {
-          lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) + 
-            border);
-          lobbies[lobby][0].y = Math.floor((Math.random() * (data.canvas.h - border)) + 
-            border);
-        }
-        else {
-            let generateAgain = true;
-            // for the possiblity that a player is set at the same pos as
-            // another player, and when getting a new pos, it keeps getting
-            // the same pos over and over again forever
-            let count = 0;
-            let x, y = -1;
+        // if(i == 0) {
+        //   lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) + 
+        //     border);
+        //   lobbies[lobby][0].y = Math.floor((Math.random() * (data.canvas.h - border)) + 
+        //     border);
+        // }
+        // else {
+        //     let generateAgain = true;
+        //     // for the possiblity that a player is set at the same pos as
+        //     // another player, and when getting a new pos, it keeps getting
+        //     // the same pos over and over again forever
+        //     let count = 0;
+        //     let x, y = -1;
 
-            while(generateAgain || count < 10) {
-                ++ count;
+        //     while(generateAgain || count < 10) {
+        //         ++count;
 
-                x = Math.floor((Math.random() * (data.canvas.w - border)) + 
-                border);
-                y = Math.floor((Math.random() * (data.canvas.h - border)) + 
-                border);
+        //         x = Math.floor((Math.random() * (data.canvas.w - border)) + 
+        //         border);
+        //         y = Math.floor((Math.random() * (data.canvas.h - border)) + 
+        //         border);
 
-                // check if too close to eaach other player with pos
-                for(let j = 0; j < lobbies[lobby].length; j++) {
-                    generateAgain = touching(x, y, 
-                      lobbies[lobby][j].x, 
-                      lobbies[lobby][j].y);
-                }
-            }
+        //         // check if too close to eaach other player with pos
+        //         for(let j = 0; j < lobbies[lobby].length; j++) {
+        //             generateAgain = touching(x, y, 
+        //               lobbies[lobby][j].x, 
+        //               lobbies[lobby][j].y);
+        //         }
+        //     }
 
-            lobbies[lobby][0].x = x;
-            lobbies[lobby][0].y = y;
-        }
+        //     lobbies[lobby][0].x = x;
+        //     lobbies[lobby][0].y = y;
+        // }
     }
 
     // set who starts with the potato
