@@ -61,12 +61,12 @@ body {
 .menuButton:hover {
     background-color: #F5B041;
 }
-#settingsText {
+.customizationText {
     color: white;
     font-size: 35px;
     margin-top: 5%;
 }
-#joinInput {
+.inputInput {
     border: none;
     font-size: 50px; 
     margin-top: 10%;
@@ -76,6 +76,9 @@ body {
     background-color: black;
     border-bottom: 4px solid white;
     color: #F5B041;
+}
+#nameInput {
+    margin-top: 0;
 }
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

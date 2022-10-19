@@ -1,5 +1,5 @@
 SMALL GOALS:
--Mobile controls
+-Make mobile friendly
 -Make sure the player that starts with potato is random (use commented line instead)
 -Make sure that game is normal length(use commented line instead)
 -Fix player name being off-center
@@ -23,9 +23,7 @@ ADDITIONAL STUFF GOALS:
         -Can also be slower but have a smaller hitbox (and look smaller)
 
 -Name change
-    >Don't allow multiple players to have the same name
-    >Name should have a length limit that isn't too long (because of name tag)
-    >Can change name at main menu and in lobby
+    >Can change in lobby
 
 -Potato burning effect (so it actually is a flame potato, kind of actually like what the 
     name of this game is)

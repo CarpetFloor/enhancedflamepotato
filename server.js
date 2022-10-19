@@ -350,11 +350,11 @@ let maxDashWaitFrame = fps * 5;
 io.on('connection', (socket) => {
   console.log(socket.id + " connected");
   users.push(new User(socket.id));
-  users[users.length - 1].name = "idonthavename1234567" + (users.length - 1);
+  users[users.length - 1].name = "idonthavename" + (users.length - 1);
 
   lobbies[0].push(users[users.length - 1]);
   socket.join("0");
-  io.to("0").emit("connected");// give client their user id
+  io.to("0").emit("connected", users[users.length - 1].name);// give client their user id
 
   socket.on("disconnect", () => {
     let id = socket.id;
@@ -612,7 +612,7 @@ io.on('connection', (socket) => {
   // make client lastx different because client moved mouse and facing in new direction
   socket.on("player setting lastx", (lastx, lobby, index) => {
       lobbies[lobby][index].lastx = lastx;
-  })
+  });
 
   socket.on("player throwing potato", (x, y, lobby) => {
       if(potatos[lobby].attached) {
@@ -622,7 +622,21 @@ io.on('connection', (socket) => {
           potatos[lobby].throwFrame = 0;
           potatos[lobby].threw = true;
       }
-  })
+  });
+
+  socket.on("get all player names", () => {
+      let names = [];
+
+      for(let i = 0; i < users.length; i++) {
+          names.push(users[i].name);
+      }
+
+      io.to("0").emit("recieved all player names", names);
+  });
+
+  socket.on("set player name", (id, changeNameTo) => {
+      users[getUserPos(id)].name = changeNameTo;
+  });
 });
 
 http.listen(process.env.PORT || port, () => {

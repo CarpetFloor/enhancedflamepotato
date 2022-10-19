@@ -76,22 +76,18 @@
             <p id="menuSubText">V1.2.3 Why is there so much lag :|</p>
             <button onclick="createLobby()" class="menuButton">Create Game</button>
             <button onclick="joinLobbyMenu()" class="menuButton">Join Game</button>
-            <button onclick="settings()" class="menuButton">Settings</button>
+            <button onclick="settings()" class="menuButton">Player</button>
         </div>
 
         <div class="menu" id="settings">
-            <p id="settingsText">So, um, yes. I don't actually have this "settings"
-                thing created yet. But don't worry, or maybe.
-                Because I was going to say that I might create this,
-                but I don't know if I actually will. Because, you know,
-                doing so would actually require something called "effort".
-                And yup, that is not an easy thing to find.
-            </p>
+            <p id="currentName" class="customizationText">Name: nothing</p>
+            <input id="nameInput" class="inputInput" type="text" placeholder="Name">
+            <button onclick="changeName()" class="menuButton">Change Name</button>
             <button onclick="backToMainMenu()" class="menuButton">Main Menu</button>
         </div>
 
         <div class="menu" id="join">
-            <input id="joinInput" type="number" placeholder="gameID">
+            <input id="joinInput" class="inputInput" type="number" placeholder="gameID">
             <div id="joinMenuButtons">
                 <button id="joinLobbyButton" onclick="joinLobby()" class="menuButton">
                     Join</button>

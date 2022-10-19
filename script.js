@@ -8,11 +8,16 @@ let index = -1;
 /*for some reason no matter what room c1ient0 is in, they
 still get stuff from the first room*/            
 let lobby = 0;
+let nameSetTo = "name";
+let nameAttempt = "";
+let tryingToSetName = false;
 // when connected to the server, set id
-socket.on("connected", ()=> {
+socket.on("connected", (name)=> {
     if(lobby < 1 && id == -1) {
         id = socket.id;
         console.log(id);
+
+        nameSetTo = name
     }
 });
 
@@ -38,7 +43,7 @@ function joinLobbyMenu() {
 
 function joinLobby() {
     let lobby = parseInt(document.getElementById("joinInput").value);
-    socket.emit("join lobby", id, lobby)
+    socket.emit("join lobby", id, lobby);
 
     // clear value entered in input after joining a lobby
     document.getElementById("joinInput").value = "";
@@ -62,7 +67,7 @@ socket.on("set lobby names", (players, currentLobby) => {
         document.getElementById("gameId").innerHTML = "GameID: " + 
         currentLobby;
         // set correct c1ient name in lobby menu
-        document.getElementById("youName").innerHTML = players[index];
+        document.getElementById("youName").innerHTML = nameSetTo;
 
         // clear current player names
         let parent = document.getElementById("lobbyPlayers");
@@ -87,7 +92,44 @@ function settings() {
     document.getElementById("menuSubText").style.visibility = 
     "hidden";
     document.getElementById("settings").style.visibility = "visible";
+
+    // show current name
+    document.getElementById("currentName").innerHTML = "Name: " + nameSetTo;
 }
+
+function changeName() {
+    tryingToSetName = true;
+    nameAttempt = document.getElementById("nameInput").value;
+
+    if(nameAttempt.length < 21) {
+        socket.emit("get all player names");
+    }
+    else {
+        tryingToSetName = false;
+        window.alert("name too long. Must be less than 21 characters!");
+    }
+}
+
+socket.on("recieved all player names", (allNames) => {
+    if(tryingToSetName) {
+        tryingToSetName = false;
+
+        let exists = false;
+
+        for(let i = 0; i < allNames.length; i++) {
+            if(allNames[i] == nameAttempt) {
+                exists = true;
+                break;
+            }
+        }
+
+        if(!exists) {
+            nameSetTo = nameAttempt;
+            socket.emit("set player name", id, nameSetTo);
+            document.getElementById("currentName").innerHTML = "Name: " + nameSetTo;
+        }
+    }
+});
 
 function backToMainMenu() {
     mapR.clearRect(0, 0, w, h);
