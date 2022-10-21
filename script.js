@@ -1007,17 +1007,8 @@ let explosion = {
                         mapR.clearRect(0, 0, w, h);
                         r.clearRect(0, 0, w, h);
                         dashEffectR.clearRect(0, 0, w, h);                       
-
-                        if(index != 0) {
-                            backToMainMenu();
-
-                            window.setTimeout(() => {
-                                console.log("here")
-                                socket.emit("join lobby", id, goBackToLobby);
-                            }, 200);
-                        }
-                        else
-                            showLobby();
+                        
+                        backToMainMenu();
                     }, 1000 * wait1);
                 }, 1000 * wait0);
             }
