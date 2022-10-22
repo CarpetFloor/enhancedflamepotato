@@ -129,16 +129,16 @@ function User(id) {
       }
 
       let margin = 10;
-      // if(this.mobile) {
-      //     if(joystickData.movex > 0)
-      //         this.dirx = 1;
-      //     if(joystickData.movex < 0)
-      //         this.dirx = -1;
-      //     if(joystickData.movey > 0)
-      //         this.diry = 1;
-      //     if(joystickData.movey < 0)
-      //         this.diry = -1;
-      // }
+      if(this.mobile) {
+          if(joystickData.movex > 0)
+              this.dirx = 1;
+          if(joystickData.movex < 0)
+              this.dirx = -1;
+          if(joystickData.movey > 0)
+              this.diry = 1;
+          if(joystickData.movey < 0)
+              this.diry = -1;
+      }
       
       // don't allow movement past screen border
       // x
@@ -188,12 +188,12 @@ function User(id) {
                   this.y += this.diry * this.speed;
           }
       }
-      // else {
-      //     if(this.canMovex)
-      //         this.x += joystickData.movex;
-      //     if(this.canMovey)
-      //         this.y += joystickData.movey;
-      // }
+      else {
+          if(this.canMovex)
+              this.x += joystickData.movex;
+          if(this.canMovey)
+              this.y += joystickData.movey;
+      }
 
       // if player ever gets outside of the screen, move player back in
       if(this.x < margin)
@@ -204,6 +204,13 @@ function User(id) {
           this.y = margin * 2;
       if(this.y > h - margin)
           this.y = h - (margin * 2);
+        
+      if(this.mobile) {
+        if(joystickData.movex === 0)
+            this.dirx = 0;
+        if(joystickData.movey === 0)
+            this.diry = 0;
+    }
   },
   this.animation = function () {
       // set next frame of animation when this function is called next frame
@@ -347,7 +354,7 @@ let lobbiesInGame = [];// which lobbies are in the game
 let maxPlayersPerLobby = 10;
 let startWait = 500;
 let fps = 60;
-let gameLengthPerPlayer = 4;// in seconds
+let gameLengthPerPlayer = 10;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 let maxDashWaitFrame = fps * 3;
 let border = 200;
@@ -538,33 +545,6 @@ io.on('connection', (socket) => {
     }
   });
 
-//   socket.on("next round", (lobby) => {
-//     // reset game stuff
-//     potatos[lobby] = new Potato;
-//     potatos[lobby].lobby = lobby;
-//     let interval;
-//     intervals[lobby] = interval;
-//     overs[lobby] = false;
-//     gameFrames[lobby] = 0;
-//     // set new game length based off of players
-//     maxGameFrames[lobby] = (lobbies[lobby].length * fps * gameLengthPerPlayer);
-
-//     // give potato to new person
-//     // set who starts with the potato
-//     potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
-//     // potatos[lobby].player = 1;
-//     potatos[lobby].attached = true;
-//     // set position of potato to position of the player who has it
-//     potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
-//     potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
-
-//     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
-
-//     setTimeout(() => {
-//       intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
-//     }, startWait);
-//   });
-
   // client letting server know a key/ input was pressed
   socket.on("player pressed", (pressed, lobby, index) => {
       if(pressed == "left") {
@@ -657,6 +637,14 @@ io.on('connection', (socket) => {
 
   socket.on("set player name", (id, changeNameTo) => {
       users[getUserPos(id)].name = changeNameTo;
+  });
+
+  socket.on("joystick moved", (movex, movey, lobby, index) => {
+      // set player direction
+      if(movex >= 0)
+          lobbies[lobby][index].lastx = 1;
+      else
+        lobbies[lobby][index].lastx = -1;
   });
 });
 
@@ -968,7 +956,8 @@ function nextRound(lobby) {
     // set position of potato to position of the player who has it
     potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
     potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
-
+    
+    io.to(lobby.toString()).emit("update index", playingPlayers);
     io.to(lobby.toString()).emit("next round");
 
     setTimeout(() => {
