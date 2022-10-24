@@ -1,3 +1,4 @@
+-Make potato throw able to go through border like players when moving
 -Walls or something
 -Fix player name being off-center
 -Fix potato hit effect showing when the game starts, and when each round starts
