@@ -1,8 +1,10 @@
 SMALL GOALS:
--tutorial
--make player removed from game after loosing round work
--mobile
--walls
+-Make mobile friendly
+-Fix player name being off-center
+-Credits on main menu
+
+
+ADDITIONAL STUFF GOALS:
 -Spectator mode
     >When player looses round, they are able to watch the rest of the game
     >Look different than when playing regularly
