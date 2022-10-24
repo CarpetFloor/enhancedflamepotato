@@ -62,7 +62,6 @@ function User(id) {
     // right, bottom-right, bottom, bottom-left, left, top-left, top, top-right
     this.lastDir = 0,
     this.hasSentData = false,
-    this.hasMovedAcrossMap = false,
     this.processInput = function () {
         // dash
         // only allow dash if moving
@@ -140,6 +139,7 @@ function User(id) {
         //         this.diry = -1;
         // }
         
+        let acrossMapMoveAdjustment = 5;
         // don't allow movement past screen border
         // x
         if(this.x > margin && this.x < w + margin) {
@@ -154,9 +154,9 @@ function User(id) {
         // move player to other side of map
         else {
             if(this.x <= margin)
-                this.x = w + margin;
+                this.x = w + margin - acrossMapMoveAdjustment;
             else if(this.x >= w + margin)
-                this.x = margin;
+                this.x = margin + acrossMapMoveAdjustment;
         }
         
         // y
@@ -172,9 +172,9 @@ function User(id) {
         // move player to other side of map
         else {
             if(this.y <= margin)
-                this.y = h + margin;
+                this.y = h + margin - acrossMapMoveAdjustment;
             else if(this.y >= h + margin)
-                this.y = margin;
+                this.y = margin + acrossMapMoveAdjustment;
         }
         
         if(!this.mobile) {
