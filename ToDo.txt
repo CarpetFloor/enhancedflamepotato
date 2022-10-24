@@ -1,10 +1,10 @@
+-Set player direction when moving when on mobile
 -Make game longer (10)
 -Make mobile friendly
 -Make sure everything shows up properly on mobile
 -Walls or something
 -Fix player name being off-center
 -Fix potato hit effect showing when the game starts, and when each round starts
--Credits on main menu
 -Character customization menu
     >Access from main menu or lobby
     >Where name change is

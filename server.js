@@ -13,6 +13,7 @@ const io = require('socket.io')(http);
 const path = require('path');
 const { start } = require('repl');
 const port = 3000;
+const maxDashWaitFrame = fps * 3;
 
 app.use(express.static(__dirname));
 app.get('/', (req, res) => {
@@ -102,12 +103,12 @@ function User(id) {
                     this.y += this.speed * this.dashMultiplier * this.dashDiry;
                 }
             }
-            // else {
-            //     if(this.canMovex)
-            //         this.x += joystickData.movex * this.dashMultiplier;
-            //     if(this.canMovey)
-            //         this.y += joystickData.movey * this.dashMultiplier;
-            // }
+            else {
+                if(this.canMovex)
+                    this.x += joystickData.movex * this.dashMultiplier;
+                if(this.canMovey)
+                    this.y += joystickData.movey * this.dashMultiplier;
+            }
             
             // change counter for how many frames in dash
             // and then if reached max frames stop dash
@@ -128,16 +129,16 @@ function User(id) {
         }
         
         let margin = 10;
-        // if(this.mobile) {
-        //     if(joystickData.movex > 0)
-        //         this.dirx = 1;
-        //     if(joystickData.movex < 0)
-        //         this.dirx = -1;
-        //     if(joystickData.movey > 0)
-        //         this.diry = 1;
-        //     if(joystickData.movey < 0)
-        //         this.diry = -1;
-        // }
+        if(this.mobile) {
+            if(joystickData.movex > 0)
+                this.dirx = 1;
+            if(joystickData.movex < 0)
+                this.dirx = -1;
+            if(joystickData.movey > 0)
+                this.diry = 1;
+            if(joystickData.movey < 0)
+                this.diry = -1;
+        }
         
         let acrossMapMoveAdjustment = 5;
         // don't allow movement past screen border
@@ -198,12 +199,12 @@ function User(id) {
                 this.y += this.diry * this.speed;
             }
         }
-        // else {
-        //     if(this.canMovex)
-        //         this.x += joystickData.movex;
-        //     if(this.canMovey)
-        //         this.y += joystickData.movey;
-        // }
+        else {
+            if(this.canMovex)
+                this.x += joystickData.movex;
+            if(this.canMovey)
+                this.y += joystickData.movey;
+        }
         
         // if player ever gets outside of the screen, move player back in
         // if(this.x < margin)
@@ -216,6 +217,13 @@ function User(id) {
         //     this.y = h - (margin * 2);
     },
     this.animation = function () {
+        if(this.mobile) {
+            if(joystickData.movex === 0)
+                this.dirx = 0;
+            if(joystickData.movey === 0)
+                this.diry = 0;
+        }
+
         // set next frame of animation when this function is called next frame
         // if the player is moving
         if(this.dirx != 0 || this.diry != 0) {
@@ -359,7 +367,6 @@ let startWait = 500;
 let fps = 60;
 let gameLengthPerPlayer = 5;// in seconds
 let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
-let maxDashWaitFrame = fps * 5;
 // 13 skins
 /*
 Skins laid out horizontally, with top row being facing left and bottom row facing right

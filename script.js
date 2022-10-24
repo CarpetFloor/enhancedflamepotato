@@ -418,7 +418,7 @@ function startGame() {
             joystickData.y = joystick.GetY();
             mobileMove();
             // have to call function this often otherwise movement is jittery
-        }, Math.ceil(timeUntilNextFrame / 2));
+        }, Math.round(1000 / 120));
 
         document.getElementById("mobileButtonsDash").addEventListener(
             "touchstart", mobileDash);
@@ -438,14 +438,62 @@ function startGame() {
     // detect click or tap for throwing the potato
     if(!mobile)
         document.getElementById("mainCanvas").addEventListener("mousedown", mouseDown);
-    // else
-    //     document.getElementById("mainCanvas").addEventListener("touchstart", touched);
+    else
+        document.getElementById("mainCanvas").addEventListener("touchstart", touched);
 
     // show mobile controls
     if(mobile) {
         document.getElementById("mobileDashImg").style.visibility = "visible";
         document.getElementById("joystickContainer").style.visibility = "visible";
     }
+}
+
+let joystickConfig = {
+    "internalFillColor": "#34495E",
+    "internalStrokeColor": "#283747",
+    "internalLineWidth": 4,
+    "externalStrokeColor": "#212F3D",
+    "externalLineWidth": 5
+};
+// syntax is correct here
+let joystick = new JoyStick("joystickContainer", joystickConfig);
+
+let joystickData = {
+    x: 0,
+    y: 0,
+    movex: 0,
+    movey: 0
+}
+
+function mobileMove() {
+    // don't have to check if started because this function
+    // only called when game is running
+    if(!over) {
+        joystickData.movex = 0;
+        joystickData.movey = 0;
+
+        if(joystickData.x != 0 || joystickData.y != 0) {                        
+            // actually set how much the player should move by on x and y
+            // do so by normalizing vector of relative position of joystick
+            let hypotenuse = Math.sqrt(
+                Math.pow(joystickData.x, 2) + Math.pow(joystickData.y, 2));
+            let normalized = {
+                x: joystickData.x / hypotenuse,
+                y: (0 - joystickData.y) / hypotenuse
+            }
+            if(players[clientId].canMovex) {
+                joystickData.movex =  normalized.x * players[clientId].speed;
+            }
+            if(players[clientId].canMovey) {
+                joystickData.movey = normalized.y * players[clientId].speed;
+            }
+        }
+    }
+}
+
+// make dash button work on mobile
+function mobileDash() {
+    socket.emit("player pressed", "dash", lobby, index);
 }
 
 /*
@@ -533,6 +581,32 @@ function mouseDown(e) {
 
         lastMousex *= w;
         lastMousey *= h;
+
+        socket.emit("player throwing potato", lastMousex, lastMousey, lobby);
+    }
+}
+
+/*
+mobile
+canvas touched
+*/
+function touched(e) {
+    if(potatoRenderData.player == index) {
+        let evt = (typeof e.originalEvent === 'undefined') ? e : e.originalEvent;
+        let touch = evt.touches[evt.touches.length - 1] || 
+        evt.changedTouches[evt.touches.length - 1];
+        let bounds = c.getBoundingClientRect();
+        let lastMousex = touch.pageX - bounds.left - scrollX;
+        let lastMousey = touch.pageY - bounds.top - scrollY;
+
+        lastMousex /= bounds.width; 
+        lastMousey /= bounds.height;
+
+        lastMousex *= w;
+        lastMousey *= h;
+
+        potato.throwFrame = 0;
+        potato.threw = true;
 
         socket.emit("player throwing potato", lastMousex, lastMousey, lobby);
     }
@@ -835,11 +909,11 @@ function removeListeners() {
         document.removeEventListener("mousemove", mouseMoved);
         document.removeEventListener("mousedown", mouseDown);
     }
-    // else {
-    //     document.removeEventListener("touchstart", mobileDash);
-    //     document.removeEventListener("touchmove", mobileDash);
-    //     document.removeEventListener("touchstart", touched);
-    // }
+    else {
+        document.removeEventListener("touchstart", mobileDash);
+        document.removeEventListener("touchmove", mobileDash);
+        document.removeEventListener("touchstart", touched);
+    }
 }
 
 let explosion = {
@@ -909,8 +983,12 @@ let explosion = {
                     showPlayer(playersRenderData[i], i);
             }
 
-            if(potatoRenderData.player == index)
-                document.getElementById("gameOverText").innerHTML = "You Got Potato'd!";
+            if(potatoRenderData.player == index) {
+                if(mobile)
+                    document.getElementById("gameOverText").innerHTML = "You Got<br>Potato'd!";
+                else
+                    document.getElementById("gameOverText").innerHTML = "You Got Potato'd!";
+            }
 
             // // don't show exploded player
             // if(potatoRenderData.player != index)
@@ -998,6 +1076,13 @@ let explosion = {
 
 socket.on("game over", () => {
     removeListeners();
+
+    // hide mobile controls and stop getting data from joystick
+    if(mobile) {
+        window.clearInterval(joystickInterval);
+        document.getElementById("mobileDashImg").style.visibility = "hidden";
+        document.getElementById("joystickContainer").style.visibility = "hidden";
+    }
 
     r.clearRect(0, 0, w, h);
     for(let i = 0; i < playersRenderData.length; i++) {
