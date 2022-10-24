@@ -49,6 +49,15 @@ function joinLobby() {
     document.getElementById("joinInput").value = "";
 }
 
+function tutorial() {
+    document.getElementById("mainMenu").style.visibility = "hidden";
+    document.getElementById("menuSubText").style.visibility = 
+    "hidden";
+
+    document.getElementById("tutorial").style.visibility = "visible";
+    document.body.style.overflow = "auto";
+}
+
 // successfully joined lobby, so change menu to lobby meny
 socket.on("joined lobby", () => {
     document.getElementById("mainMenu").style.visibility = "visible";
@@ -132,6 +141,9 @@ socket.on("recieved all player names", (allNames) => {
 });
 
 function backToMainMenu() {
+    document.body.style.overflow = "hidden";
+    window.scroll(0, 0);
+    removeListeners();
     mapR.clearRect(0, 0, w, h);
     r.clearRect(0, 0, w, h);
     dashEffectR.clearRect(0, 0, w, h);
@@ -142,6 +154,7 @@ function backToMainMenu() {
     document.getElementById("settings").style.visibility = "hidden";
     document.getElementById("join").style.visibility = "hidden";
     document.getElementById("lobby").style.visibility = "hidden";
+    document.getElementById("tutorial").style.visibility = "hidden";
     document.getElementById("gameOverText").style.visibility = "hidden";
 
     socket.emit("go back to main lobby", id, lobby);

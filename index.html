@@ -79,6 +79,7 @@
             <button onclick="createLobby()" class="menuButton">Create Game</button>
             <button onclick="joinLobbyMenu()" class="menuButton">Join Game</button>
             <button onclick="settings()" class="menuButton">Player</button>
+            <button onclick="tutorial()" class="menuButton">Tutorial</button>
         </div>
 
         <div class="menu" id="settings">
@@ -115,6 +116,57 @@
                 <p id="lobbyTopText">Players</p>
                 <div id="lobbyPlayers"></div>
             </div>
+        </div>
+
+        <div class="menu" id="tutorial">
+            <p id="tutorialText">
+                Since so many people apparently wanted a tutorial to know how 
+                to play the game, becuase apparently that is something they did 
+                not know, here is the so-called "tutorial" that has now officially 
+                been added to this game.
+                <br>
+                <br>
+                <br>
+                Preface: Make sure to <b>PLAY IN LANDSCAPE MODE IF ON MOBILE</b> (that 
+                is when your phone is longer horizontally than vertically). And yes, 
+                there is no warning or checking for if in landscape mode, but that's 
+                because it is kind of difficult to do and just telling people to play 
+                in landscape mode is much easier. And yes, this probably is not actually 
+                a preface, but that sounds cool.
+                <br>
+                <br>
+                <br>
+                Goal: Make sure you don't have the potato (should be pretty obvious, 
+                because there is literally a potato in the game. Plus, it's on fire) 
+                when the time runs out. The time is shown the red bar in the top-center 
+                of the screen. Whoever does have the potato when time runs out will be 
+                eliminated and the next round will start with the remaining players until 
+                one player wins.
+                <br>
+                <br>
+                <br>
+                Controls
+                <br>
+                <br>
+                <b>-MOVE</b>: WASD, or the arrow keys on computer. On mobile, use the joystick in the 
+                bottom-left corner of the screen.
+                <br>
+                <br>
+                <b>-THROW POTATO</b>: Click the screen where you want the potato to go on a computer. 
+                On mobile tap on the screen where you want the potato to be thrown. When 
+                throwing the potato, it does not have infite range, but will go over half of 
+                the map. Throwing the potato is the only way to give the potato to another 
+                player. If you miss your throw when trying to hit another player (you 
+                probably will) it will land on the ground and remain there until picked up. 
+                The only player who can pick up the potato is the person who threw it. And if 
+                <b>the potato is on the ground</b> when the time runs out, the player who thew 
+                it and missed will still loose that round.
+                <br>
+                <br>
+                <b>-ABILITY</b>: Space bar on computer. On mobile, use the button in the bottom-right 
+                corner of the screen.
+            </p>
+            <button onclick="backToMainMenu()" class="menuButton">Main Menu</button>
         </div>
 
         <div id="joystickContainer"></div>

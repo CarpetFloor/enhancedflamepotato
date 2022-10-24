@@ -1,18 +1,9 @@
-SMALL GOALS:
+-Moving past border sends player to border on opposite side
 -Make mobile friendly
+-Walls or something
 -Fix player name being off-center
+-Fix potato hit effect showing when the game starts, and when each round starts
 -Credits on main menu
-
-
-ADDITIONAL STUFF GOALS:
--Spectator mode
-    >When player looses round, they are able to watch the rest of the game
-    >Look different than when playing regularly
-    >Allow player to exit to main menu
-    >If watched through the entire game, spectator(s) sent back to lobby with players
-
--When game is over, send everyone (including spectators) back to lobby to allow playing again
-
 -Character customization menu
     >Access from main menu or lobby
     >Where name change is
@@ -20,20 +11,14 @@ ADDITIONAL STUFF GOALS:
     >Where player type is
         -Can be faster but have a larger hitbox (and look bigger)
         -Can also be slower but have a smaller hitbox (and look smaller)
-
 -Name change
     >Can change in lobby
-
 -Potato hit player impact effect
-
 -Make main menu look better
     >Add a flaming potato
     >Add other cool stuff
-
 -More player skins
-
 -More maps (only visual)
-
 -Different abilities (all have same cooldown)
     >Can ony choose one ability
     >Defensive (for when player does not have the potato)
@@ -48,12 +33,9 @@ ADDITIONAL STUFF GOALS:
         -Land mine (while active, when potato misses and is on the ground, if another 
             player moves near the potato at a radius that is larger than needed for 
             the throw, that player is given the potato)
-
 -Randomly moving barriers
     >Ideas for how they work and what they are here (I have no idea yet)
-
 -Powerups that randomly spawn (should last for a short time)
     >Super speed
     >Other powerups here
-
 -Make all indentation of server.js 4
