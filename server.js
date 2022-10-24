@@ -13,7 +13,12 @@ const io = require('socket.io')(http);
 const path = require('path');
 const { start } = require('repl');
 const port = 3000;
-const maxDashWaitFrame = fps * 3;
+const fps = 60;
+const maxDashWaitFrame = fps * 2;
+const maxPlayersPerLobby = 10;
+const startWait = 500;
+const gameLengthPerPlayer = 10;// in seconds
+const loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 
 app.use(express.static(__dirname));
 app.get('/', (req, res) => {
@@ -63,6 +68,8 @@ function User(id) {
     // right, bottom-right, bottom, bottom-left, left, top-left, top, top-right
     this.lastDir = 0,
     this.hasSentData = false,
+    this.mobileMovex = 0,
+    this.mobileMovey = 0,
     this.processInput = function () {
         // dash
         // only allow dash if moving
@@ -105,9 +112,9 @@ function User(id) {
             }
             else {
                 if(this.canMovex)
-                    this.x += joystickData.movex * this.dashMultiplier;
+                    this.x += this.mobileMovex * this.dashMultiplier;
                 if(this.canMovey)
-                    this.y += joystickData.movey * this.dashMultiplier;
+                    this.y += this.mobileMovey * this.dashMultiplier;
             }
             
             // change counter for how many frames in dash
@@ -130,13 +137,13 @@ function User(id) {
         
         let margin = 10;
         if(this.mobile) {
-            if(joystickData.movex > 0)
+            if(this.mobileMovex > 0)
                 this.dirx = 1;
-            if(joystickData.movex < 0)
+            if(this.mobileMovex < 0)
                 this.dirx = -1;
-            if(joystickData.movey > 0)
+            if(this.mobileMovey > 0)
                 this.diry = 1;
-            if(joystickData.movey < 0)
+            if(this.mobileMovey < 0)
                 this.diry = -1;
         }
         
@@ -201,9 +208,17 @@ function User(id) {
         }
         else {
             if(this.canMovex)
-                this.x += joystickData.movex;
+                this.x += this.mobileMovex;
             if(this.canMovey)
-                this.y += joystickData.movey;
+                this.y += this.mobileMovey;
+        }
+
+        // reset dirx and diry of player on mobile if not moving joystick
+        if(this.mobile) {
+            if(this.mobileMovex === 0)
+                this.dirx = 0;
+            if(this.mobileMovey === 0)
+                this.diry = 0;
         }
         
         // if player ever gets outside of the screen, move player back in
@@ -217,13 +232,6 @@ function User(id) {
         //     this.y = h - (margin * 2);
     },
     this.animation = function () {
-        if(this.mobile) {
-            if(joystickData.movex === 0)
-                this.dirx = 0;
-            if(joystickData.movey === 0)
-                this.diry = 0;
-        }
-
         // set next frame of animation when this function is called next frame
         // if the player is moving
         if(this.dirx != 0 || this.diry != 0) {
@@ -362,323 +370,307 @@ let maxGameFrames = ["max game frame"];// what max frame for each game is
 let uis = ["ui"];// contains objects that hold data and functions for ui stuff
 let lobbies = [[]];// contains data for each client
 let lobbiesInGame = [];// which lobbies are in the game
-let maxPlayersPerLobby = 10;
-let startWait = 500;
-let fps = 60;
-let gameLengthPerPlayer = 5;// in seconds
-let loopWait = Math.round(1000 / fps);// how many milliseconds are between each call of the main game loop
 // 13 skins
 /*
 Skins laid out horizontally, with top row being facing left and bottom row facing right
 */
 
 io.on('connection', (socket) => {
-console.log(socket.id + " connected");
-users.push(new User(socket.id));
-users[users.length - 1].name = "idonthavename" + (users.length - 1);
+    console.log(socket.id + " connected");
+    users.push(new User(socket.id));
+    users[users.length - 1].name = "idonthavename" + (users.length - 1);
 
-lobbies[0].push(users[users.length - 1]);
-socket.join("0");
-io.to("0").emit("connected", users[users.length - 1].name);// give client their user id
+    lobbies[0].push(users[users.length - 1]);
+    socket.join("0");
+    io.to("0").emit("connected", users[users.length - 1].name);// give client their user id
 
-socket.on("disconnect", () => {
-    let id = socket.id;
-    let userIndex = getUserPos(id);
-    
-    console.log(id + " disconnected");
-    // get which lobby disconnected player was from
-    let lobbyRemovePos = parseInt(users[userIndex].lobby);
-    
-    let playerWhoLeft = lobbies[lobbyRemovePos][userIndex].name;
-    
-    // remove disconnected player from users array
-    users.splice(getUserPos(id), 1);
-    // 
-    // remove disconnected player from lobbies array
-    // if else because removeFromLobby removes that lobby array
-    // if it is empty, but main lobby array never is removed
-    if(lobbyRemovePos > 0) {
-        removeFromLobby(id);
-    }
-    else {
-        for (let i = 0; i <= lobbies[lobbyRemovePos].length - 1; i++) {
-            if(lobbies[lobbyRemovePos][i].id == id) {
-                lobbies[lobbyRemovePos].splice(i, 1);
-            }
+    socket.on("disconnect", () => {
+        let id = socket.id;
+        let userIndex = getUserPos(id);
+        
+        console.log(id + " disconnected");
+        // get which lobby disconnected player was from
+        let lobbyRemovePos = parseInt(users[userIndex].lobby);
+        
+        // remove disconnected player from users array
+        users.splice(getUserPos(id), 1);
+        // 
+        // remove disconnected player from lobbies array
+        // if else because removeFromLobby removes that lobby array
+        // if it is empty, but main lobby array never is removed
+        if(lobbyRemovePos > 0) {
+            removeFromLobby(id);
         }
-    }
-    
-    // kick everyone in the lobby if game is running
-    if(lobbiesInGame.includes(lobbyRemovePos)) {
-        // stop game
-        clearInterval(intervals[lobbyRemovePos]);
-        resetPlayers(lobby);
-        
-        // remove game stuff
-        // because it will be created again when a new game is created
-        removeGameStuff(lobbyRemovePos);
-        
-        // kick players from game
-        io.to(lobbyRemovePos.toString()).emit("cancel game", playerWhoLeft);
-        
-        // remove lobby from lobbiesInGame
-        lobbiesInGame.splice(lobbyRemovePos, 1);
-    }
-    else
-    giveUpdatedPlayerList(lobbyRemovePos);
-});
-
-socket.on("create lobby", (id) => {
-    // try to find an empty lobby before creating a new one
-    let lobby = 1;
-    // only try checking if there are more lobbies than just main
-    
-    if(lobbies.length > 1) {
-        let createNew = true;
-        // check each lobby
-        for (let i = 1; i < lobbies.length; i++) {
-            if(lobbies[i].length < 1) {
-                lobby = i;
-                createNew = false;
-                break;
+        else {
+            for (let i = 0; i <= lobbies[lobbyRemovePos].length - 1; i++) {
+                if(lobbies[lobbyRemovePos][i].id == id) {
+                    lobbies[lobbyRemovePos].splice(i, 1);
+                }
             }
         }
         
-        // there is more than main lobby, but every lobby is not empty so create new
-        if(createNew) {
-            lobbies.push([]);
-            lobby = lobbies.length - 1;
+        // kick everyone in the lobby if game is running
+        if(lobbiesInGame.includes(lobbyRemovePos)) {
+            // stop game
+            clearInterval(intervals[lobbyRemovePos]);
+            resetPlayers(lobby);
+            
+            // remove game stuff
+            // because it will be created again when a new game is created
+            removeGameStuff(lobbyRemovePos);
+            
+            // kick players from game
+            io.to(lobbyRemovePos.toString()).emit("cancel game");
+            
+            // remove lobby from lobbiesInGame
+            lobbiesInGame.splice(lobbyRemovePos, 1);
         }
-    }
-    // there is only main lobby, so just create a new lobby
-    else {
-        lobbies.push([]);
-    }
-    // set player lobby to the id of the newly created lobby
-    users[getUserPos(id)].lobby = (lobby).toString();
-    // add player to newly created lobby
-    lobbies[lobby].push(users[getUserPos(id)]);
-    // remove player from the first lobby array
-    removeFromMainLobby(id);
-    // actually have player join separate socket room
-    socket.join(lobby.toString());
-    
-    giveUpdatedPlayerList(lobby);
-});
+        else
+        giveUpdatedPlayerList(lobbyRemovePos);
+    });
 
-socket.on("join lobby", (id, lobby) => {
-    // only try to let player join lobby if it already exists,
-    // if the lobby isn't empty, and if the lobby isn't already
-    // in the game
-    if(parseInt(lobby) > 0 &&
-    parseInt(lobby) <= parseInt(lobbies.length - 1) &&
-    lobbies[parseInt(lobby)].length > 0 &&
-    !(lobbiesInGame.includes(parseInt(lobby)))) {
-        // only allow client to join lobby if there are less than 4 players
-        if(lobbies[parseInt(lobby)].length < maxPlayersPerLobby) {
-            // set player lobby to requested lobby
-            users[getUserPos(id)].lobby = lobby.toString();
-            // actually have player join separate socket room
-            socket.join(lobby.toString());
-            // add player to lobby array
-            lobbies[parseInt(lobby)].push(users[getUserPos(id)]);
-            
-            // remove player from the first lobby array
-            removeFromMainLobby(id);
-            
-            // let the client know they successfuly joined lobby
-            io.to(lobby.toString()).emit("joined lobby");
-            
-            giveUpdatedPlayerList(parseInt(lobby));
-        }
-    }
-    
-});
-
-socket.on("go back to main lobby", (id, lobby) => {
-    // first check to see if player actually needs to be removed
-    // incase they were already in the first lobby
-    let remove = true;
-    for (let i = 0; i <= lobbies[0].length - 1; i++) {
-        if(lobbies[0][i].id == id)
-        remove = false;
-    }
-    
-    if(remove) {
-        if(lobbies[lobby].length <= 2 && lobbiesInGame.includes(lobby)) {
-            
-            for (let i = 0; i < lobbiesInGame.length; i++) {
-                
-                if(lobbiesInGame[i] == lobby) {
-                    lobbiesInGame.splice(i, 1);
+    socket.on("create lobby", (id) => {
+        // try to find an empty lobby before creating a new one
+        let lobby = 1;
+        // only try checking if there are more lobbies than just main
+        
+        if(lobbies.length > 1) {
+            let createNew = true;
+            // check each lobby
+            for (let i = 1; i < lobbies.length; i++) {
+                if(lobbies[i].length < 1) {
+                    lobby = i;
+                    createNew = false;
                     break;
+                }
+            }
+            
+            // there is more than main lobby, but every lobby is not empty so create new
+            if(createNew) {
+                lobbies.push([]);
+                lobby = lobbies.length - 1;
+            }
+        }
+        // there is only main lobby, so just create a new lobby
+        else {
+            lobbies.push([]);
+        }
+        // set player lobby to the id of the newly created lobby
+        users[getUserPos(id)].lobby = (lobby).toString();
+        // add player to newly created lobby
+        lobbies[lobby].push(users[getUserPos(id)]);
+        // remove player from the first lobby array
+        removeFromMainLobby(id);
+        // actually have player join separate socket room
+        socket.join(lobby.toString());
+        
+        giveUpdatedPlayerList(lobby);
+    });
+
+    socket.on("join lobby", (id, lobby) => {
+        // only try to let player join lobby if it already exists,
+        // if the lobby isn't empty, and if the lobby isn't already
+        // in the game
+        if(parseInt(lobby) > 0 &&
+        parseInt(lobby) <= parseInt(lobbies.length - 1) &&
+        lobbies[parseInt(lobby)].length > 0 &&
+        !(lobbiesInGame.includes(parseInt(lobby)))) {
+            // only allow client to join lobby if there are less than 4 players
+            if(lobbies[parseInt(lobby)].length < maxPlayersPerLobby) {
+                // set player lobby to requested lobby
+                users[getUserPos(id)].lobby = lobby.toString();
+                // actually have player join separate socket room
+                socket.join(lobby.toString());
+                // add player to lobby array
+                lobbies[parseInt(lobby)].push(users[getUserPos(id)]);
+                
+                // remove player from the first lobby array
+                removeFromMainLobby(id);
+                
+                // let the client know they successfuly joined lobby
+                io.to(lobby.toString()).emit("joined lobby");
+                
+                giveUpdatedPlayerList(parseInt(lobby));
+            }
+        }
+        
+    });
+
+    socket.on("go back to main lobby", (id, lobby) => {
+        // first check to see if player actually needs to be removed
+        // incase they were already in the first lobby
+        let remove = true;
+        for (let i = 0; i <= lobbies[0].length - 1; i++) {
+            if(lobbies[0][i].id == id)
+            remove = false;
+        }
+        
+        if(remove) {
+            if(lobbies[lobby].length <= 2 && lobbiesInGame.includes(lobby)) {
+                
+                for (let i = 0; i < lobbiesInGame.length; i++) {
+                    
+                    if(lobbiesInGame[i] == lobby) {
+                        lobbiesInGame.splice(i, 1);
+                        break;
+                    }
+                    
                 }
                 
             }
+            socket.leave(lobby.toString());
+            // set player lobby back to main lobby
+            users[getUserPos(id)].lobby = "0";
+            // add player back to first array in lobbies array
+            lobbies[0].push(users[getUserPos(id)])
+            // send player to first socket room
+            socket.join("0");
+            // if player was in a lobby other than the first, remove them
+            // from that array
+            removeFromLobby(id);
             
+            giveUpdatedPlayerList(lobby);
         }
-        socket.leave(lobby.toString());
-        // set player lobby back to main lobby
-        users[getUserPos(id)].lobby = "0";
-        // add player back to first array in lobbies array
-        lobbies[0].push(users[getUserPos(id)])
-        // send player to first socket room
-        socket.join("0");
-        // if player was in a lobby other than the first, remove them
-        // from that array
-        removeFromLobby(id);
-        
-        giveUpdatedPlayerList(lobby);
-    }
-});
+    });
 
-socket.on("start game attempt", (lobby) => {
-    // only start the game if there is at least 2 players in lobby
-    // and don't need to check for max amount of players, because that
-    // is already checked when trying to join lobby
-    if(lobbies[lobby].length > 1 && !(lobbiesInGame.includes(lobby))) {
-        lobbiesInGame.push(lobby);
-        potatos.push(new Potato);
-        potatos[potatos.length - 1].lobby = lobby;
-        let interval;
-        intervals.push(interval);
-        overs.push(false);
-        gameFrames.push(0);
-        maxGameFrames.push(lobbies[lobby].length * fps * gameLengthPerPlayer);
-        
-        io.to(lobby.toString()).emit("game started", gameMapData(lobby));
-        
-        setTimeout(() => {
-            intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
-        }, startWait);
-    }
-});
-
-//   socket.on("next round", (lobby) => {
-//     // reset game stuff
-//     potatos[lobby] = new Potato;
-//     potatos[lobby].lobby = lobby;
-//     let interval;
-//     intervals[lobby] = interval;
-//     overs[lobby] = false;
-//     gameFrames[lobby] = 0;
-//     // set new game length based off of players
-//     maxGameFrames[lobby] = (lobbies[lobby].length * fps * gameLengthPerPlayer);
-
-//     // give potato to new person
-//     // set who starts with the potato
-//     potatos[lobby].player = Math.floor(Math.random() * lobbies[lobby].length);
-//     // potatos[lobby].player = 1;
-//     potatos[lobby].attached = true;
-//     // set position of potato to position of the player who has it
-//     potatos[lobby].x = lobbies[lobby][potatos[lobby].player].x;
-//     potatos[lobby].y = lobbies[lobby][potatos[lobby].player].y;
-
-//     io.to(lobby.toString()).emit("game started", gameMapData(lobby));
-
-//     setTimeout(() => {
-//       intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
-//     }, startWait);
-//   });
-
-// client letting server know a key/ input was pressed
-socket.on("player pressed", (pressed, lobby, index) => {
-    if(pressed == "left") {
-        lobbies[lobby][index].dirx = -1;
-    }
-    
-    if((pressed == "right") && !overs[lobby]) {
-        lobbies[lobby][index].dirx = 1;
-    }
-    
-    if((pressed == "up") && !overs[lobby]) {
-        lobbies[lobby][index].diry = -1;
-        // lobbies[lobby][index].lastDir = 6;
-    }
-    
-    if((pressed == "down") && !overs[lobby]) {
-        lobbies[lobby][index].diry = 1;
-        // lobbies[lobby][index].lastDir = 2;
-    }
-    
-    // only allow dash if moving
-    // and don't have to check to see if the game is still running
-    // because function doesn't change player last dir or lastx
-    if((pressed == "dash") && lobbies[lobby][index].canDash &&
-    (lobbies[lobby][index].dirx != 0 || lobbies[lobby][index].diry != 0)) {
-        lobbies[lobby][index].dashDirx = lobbies[lobby][index].dirx;
-        lobbies[lobby][index].dashDiry = lobbies[lobby][index].diry;
-        lobbies[lobby][index].dashPressed = true;
-    }
-    // if player moving diagonally, set last dir to be diagonal
-    //   if((lobbies[lobby][index].dirx != 0 && lobbies[lobby][index].diry != 0) && !overs[lobby]) {
-    //       if(lobbies[lobby][index].dirx == 1) {
-    //           if(lobbies[lobby][index].diry == 1)
-    //               lobbies[lobby][index].lastDir = 1;
-    //           else
-    //               lobbies[lobby][index].lastDir = 7;
-    //       }
-    //       else {
-    //           if(lobbies[lobby][index].diry == 1)
-    //               lobbies[lobby][index].lastDir = 3;
-    //           else
-    //               lobbies[lobby][index].lastDir = 5;
-    //       }
-    //   }
-});
-
-// client letting server know a key/ input was pressed
-socket.on("player released", (released, lobby, index) => {
-    if((released == "left") && lobbies[lobby][index].dirx == -1) {
-        lobbies[lobby][index].dirx = 0;
-    }
-    
-    if((released == "right") && lobbies[lobby][index].dirx == 1) {
-        lobbies[lobby][index].dirx = 0;
-    }
-    
-    if((released == "up") && lobbies[lobby][index].diry == -1) {
-        lobbies[lobby][index].diry = 0;
-    }
-    
-    if((released == "down") && lobbies[lobby][index].diry == 1) {
-        lobbies[lobby][index].diry = 0;
-    }
-});
-
-// make client lastx different because client moved mouse and facing in new direction
-socket.on("player setting lastx", (lastx, lobby, index) => {
-    lobbies[lobby][index].lastx = lastx;
-});
-
-socket.on("player throwing potato", (x, y, lobby) => {
-    try {
-        if(potatos[lobby].attached) {
-            potatos[lobby].lastMousex = x;
-            potatos[lobby].lastMousey = y;
+    socket.on("start game attempt", (lobby) => {
+        // only start the game if there is at least 2 players in lobby
+        // and don't need to check for max amount of players, because that
+        // is already checked when trying to join lobby
+        if(lobbies[lobby].length > 1 && !(lobbiesInGame.includes(lobby))) {
+            lobbiesInGame.push(lobby);
+            potatos.push(new Potato);
+            potatos[potatos.length - 1].lobby = lobby;
+            let interval;
+            intervals.push(interval);
+            overs.push(false);
+            gameFrames.push(0);
+            maxGameFrames.push(lobbies[lobby].length * fps * gameLengthPerPlayer);
             
-            potatos[lobby].throwFrame = 0;
-            potatos[lobby].threw = true;
+            io.to(lobby.toString()).emit("game started", gameMapData(lobby));
+            
+            setTimeout(() => {
+                intervals[lobby] = setInterval(gameLoop, loopWait, lobby);
+            }, startWait);
         }
-    }
-    catch(error) {
-        console.log("errory on 'player throwing potato' Error: " + error);
-    }
-});
+    });
 
-socket.on("get all player names", () => {
-    let names = [];
-    
-    for (let i = 0; i < users.length; i++) {
-        names.push(users[i].name);
-    }
-    
-    io.to("0").emit("recieved all player names", names);
-});
+    // client letting server know a key/ input was pressed
+    socket.on("player pressed", (pressed, lobby, index) => {
+        if(pressed == "left") {
+            lobbies[lobby][index].dirx = -1;
+        }
+        
+        if((pressed == "right") && !overs[lobby]) {
+            lobbies[lobby][index].dirx = 1;
+        }
+        
+        if((pressed == "up") && !overs[lobby]) {
+            lobbies[lobby][index].diry = -1;
+            // lobbies[lobby][index].lastDir = 6;
+        }
+        
+        if((pressed == "down") && !overs[lobby]) {
+            lobbies[lobby][index].diry = 1;
+            // lobbies[lobby][index].lastDir = 2;
+        }
+        
+        // only allow dash if moving
+        // and don't have to check to see if the game is still running
+        // because function doesn't change player last dir or lastx
+        if((pressed == "dash") && lobbies[lobby][index].canDash &&
+        (lobbies[lobby][index].dirx != 0 || lobbies[lobby][index].diry != 0)) {
+            lobbies[lobby][index].dashDirx = lobbies[lobby][index].dirx;
+            lobbies[lobby][index].dashDiry = lobbies[lobby][index].diry;
+            lobbies[lobby][index].dashPressed = true;
+        }
+        // if player moving diagonally, set last dir to be diagonal
+        //   if((lobbies[lobby][index].dirx != 0 && lobbies[lobby][index].diry != 0) && !overs[lobby]) {
+        //       if(lobbies[lobby][index].dirx == 1) {
+        //           if(lobbies[lobby][index].diry == 1)
+        //               lobbies[lobby][index].lastDir = 1;
+        //           else
+        //               lobbies[lobby][index].lastDir = 7;
+        //       }
+        //       else {
+        //           if(lobbies[lobby][index].diry == 1)
+        //               lobbies[lobby][index].lastDir = 3;
+        //           else
+        //               lobbies[lobby][index].lastDir = 5;
+        //       }
+        //   }
+    });
 
-socket.on("set player name", (id, changeNameTo) => {
-    users[getUserPos(id)].name = changeNameTo;
-});
+    // client letting server know a key/ input was pressed
+    socket.on("player released", (released, lobby, index) => {
+        if((released == "left") && lobbies[lobby][index].dirx == -1) {
+            lobbies[lobby][index].dirx = 0;
+        }
+        
+        if((released == "right") && lobbies[lobby][index].dirx == 1) {
+            lobbies[lobby][index].dirx = 0;
+        }
+        
+        if((released == "up") && lobbies[lobby][index].diry == -1) {
+            lobbies[lobby][index].diry = 0;
+        }
+        
+        if((released == "down") && lobbies[lobby][index].diry == 1) {
+            lobbies[lobby][index].diry = 0;
+        }
+    });
+
+    // make client lastx different because client moved mouse and facing in new direction
+    socket.on("player setting lastx", (lastx, lobby, index) => {
+        lobbies[lobby][index].lastx = lastx;
+    });
+
+    socket.on("player throwing potato", (x, y, lobby) => {
+        try {
+            if(potatos[lobby].attached) {
+                potatos[lobby].lastMousex = x;
+                potatos[lobby].lastMousey = y;
+                
+                potatos[lobby].throwFrame = 0;
+                potatos[lobby].threw = true;
+            }
+        }
+        catch(error) {
+            console.log("errory on 'player throwing potato' Error: " + error);
+        }
+    });
+
+    socket.on("mobile move", (normalizedX, normalizedY, lobby, index) => {
+        let playerRef = lobbies[lobby][index];
+        let speedRef = playerRef.speed;
+        // movement
+        playerRef.mobileMovex = normalizedX * speedRef;
+        playerRef.mobileMovey = normalizedY * speedRef;
+
+        // direction
+        if(playerRef.mobileMovex >= 0)
+            playerRef.lastx = 1;
+        else
+            playerRef.lastx = -1;
+    });
+
+    socket.on("get all player names", () => {
+        let names = [];
+        
+        for (let i = 0; i < users.length; i++) {
+            names.push(users[i].name);
+        }
+        
+        io.to("0").emit("recieved all player names", names);
+    });
+
+    socket.on("set player name", (id, changeNameTo) => {
+        users[getUserPos(id)].name = changeNameTo;
+    });
+
+    socket.on("player is mobile", (id) => {
+        users[getUserPos(id)].mobile = true;
+    });
 });
 
 http.listen(process.env.PORT || port, () => {

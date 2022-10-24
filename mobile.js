@@ -1,15 +1,18 @@
 // resizes everything for mobile devices
 // AND resizes canvases for NON-mobile devices
 
-/* making this game ended up being way harder than I thought*/
-
-
 // jQuery kind of looks like CSS, but different
 
 let mobile = false;
 let mobileWidth = 615;
 let mobileHeight = 410;
+
 $(document).ready(function() {
+    window.setTimeout(doMobileStuff, 200);
+});
+
+
+function doMobileStuff() {
     // warn the client about possible bugs
     /*window.alert("This game might have some bugs. If you do run into "
     + "a bug, refreshing the page should most likely fix it; "
@@ -19,9 +22,12 @@ $(document).ready(function() {
     if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test
     (navigator.userAgent)) {
         mobile = true;
+        // call function in script.js to let server no, because not using socket.io in this file
+        letServerKnowPlayerIsMobile();
     };
 
     if(mobile) {
+        landscapeCheck();
         // resize game canvases
         // why does this actually work
         /* I have no clue because I set the canvas css size to phone screen size,
@@ -50,7 +56,19 @@ $(document).ready(function() {
             });
         })
     }
-});
+}
+
+function landscapeCheck() {
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    if(h > w) {
+        window.alert("Please use landscape mode.");
+
+        window.setTimeout(
+            () => {landscapeCheck()}, 1500);
+    }
+}
 
 // actually make everything look good on mobile
 function setMobileView() {
@@ -60,7 +78,8 @@ function setMobileView() {
     $(".menu").css({
         "width":"100vw",
         "height":"100vh",
-        "margin":"0"
+        "margin":"0",
+        "overflow": "auto"
     });
 
     // main menu
@@ -76,7 +95,7 @@ function setMobileView() {
 
     $(".menuButton").css({
         "margin-bottom":"5px"
-    })
+    });
 
     // settings
     $("#settingsText").css({
@@ -85,7 +104,7 @@ function setMobileView() {
         "margin-bottom":defaultMargin,
         "margin-left":"100px",
         "margin-right":"100px"
-    })
+    });
 
     // join
     $("#joinInput").css({
@@ -238,5 +257,7 @@ function setMobileView() {
         "font-size":"150px",
         "margin":"0",
         "margin-top":"-10px"
-    })
+    });
+
+    window.scroll(0, 0);
 }

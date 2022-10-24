@@ -175,6 +175,10 @@ function tryToStartGame() {
     socket.emit("start game attempt", lobby);
 }
 
+function letServerKnowPlayerIsMobile() {
+    socket.emit("player is mobile", id);
+}
+
 //-- actual game stuff, but only input detection and rendering --\\
 let mapC = document.getElementById("mapCanvas")
 let mapR = mapC.getContext("2d");
@@ -466,29 +470,19 @@ let joystickData = {
 }
 
 function mobileMove() {
-    // don't have to check if started because this function
-    // only called when game is running
-    if(!over) {
-        joystickData.movex = 0;
-        joystickData.movey = 0;
+    joystickData.movex = 0;
+    joystickData.movey = 0;
 
-        if(joystickData.x != 0 || joystickData.y != 0) {                        
-            // actually set how much the player should move by on x and y
-            // do so by normalizing vector of relative position of joystick
-            let hypotenuse = Math.sqrt(
-                Math.pow(joystickData.x, 2) + Math.pow(joystickData.y, 2));
-            let normalized = {
-                x: joystickData.x / hypotenuse,
-                y: (0 - joystickData.y) / hypotenuse
-            }
-            if(players[clientId].canMovex) {
-                joystickData.movex =  normalized.x * players[clientId].speed;
-            }
-            if(players[clientId].canMovey) {
-                joystickData.movey = normalized.y * players[clientId].speed;
-            }
-        }
+    // actually set how much the player should move by on x and y
+    // do so by normalizing vector of relative position of joystick
+    let hypotenuse = Math.sqrt(
+        Math.pow(joystickData.x, 2) + Math.pow(joystickData.y, 2));
+    let normalized = {
+        x: joystickData.x / hypotenuse,
+        y: (0 - joystickData.y) / hypotenuse
     }
+
+    socket.emit("mobile move", normalized.x, normalized.y, lobby, index);
 }
 
 // make dash button work on mobile
@@ -604,9 +598,6 @@ function touched(e) {
 
         lastMousex *= w;
         lastMousey *= h;
-
-        potato.throwFrame = 0;
-        potato.threw = true;
 
         socket.emit("player throwing potato", lastMousex, lastMousey, lobby);
     }
@@ -1096,15 +1087,15 @@ socket.on("game over", () => {
 });
 
 // someone left the game, so other players are kicked from game
-socket.on("cancel game", (playerWhoLeft) => {
+socket.on("cancel game", () => {
     removeListeners();
 
-    // // hide mobile controls and stop getting data from joystick
-    // if(mobile) {
-    //     window.clearInterval(joystickInterval);
-    //     document.getElementById("mobileDashImg").style.visibility = "hidden";
-    //     document.getElementById("joystickContainer").style.visibility = "hidden";
-    // }
+    // hide mobile controls and stop getting data from joystick
+    if(mobile) {
+        window.clearInterval(joystickInterval);
+        document.getElementById("mobileDashImg").style.visibility = "hidden";
+        document.getElementById("joystickContainer").style.visibility = "hidden";
+    }
 
     document.getElementById("gameOverText").style.visibility = "hidden";
 
