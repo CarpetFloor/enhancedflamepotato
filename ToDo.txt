@@ -1,3 +1,4 @@
+-Make game longer (10)
 -Moving past border sends player to border on opposite side
 -Make mobile friendly
 -Walls or something

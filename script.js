@@ -931,8 +931,8 @@ let explosion = {
             // because it already works, and I think this is easier
             document.getElementById("gameOverText").style.visibility = "visible";
 
-            let wait0 = 5;
-            let wait1 = 2;
+            let wait0 = 2;
+            let wait1 = 1;
             // remove exploded player
             if(potatoRenderData.player == index) {
                 window.setTimeout(() => {
