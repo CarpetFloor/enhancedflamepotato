@@ -144,7 +144,7 @@ input[type=number] {
     justify-content: center;
     align-items: center;
 }
-p, button, input {
+p, a, button, input {
     outline: none;
     font-family: "VT323";   
 }
@@ -186,4 +186,32 @@ canvas {
     color: white;
     font-size: 25px;
     margin-top: 5%;
+}
+a:link, a:visited, a:active {
+    color: #F5B041;
+}
+a:hover {
+    color: #eb984e;
+}
+#creditsDiv {
+    display: flex;
+    flex-direction: column;
+}
+#creditsText, #creditsLink {
+    color: white;
+}
+#creditsText, #creditsLink {
+    font-size: 25px;
+}
+#creditsText {
+    margin-top: 5%;
+}
+#creditsLink {
+    margin-bottom: 10px;
+}
+#creditsLink:hover {
+    color: #F5B041;
+}
+#creditsMainMenuButton {
+    margin-top: 20px;
 }

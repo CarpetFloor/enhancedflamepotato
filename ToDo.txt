@@ -1,6 +1,6 @@
 -Make game longer (10)
--Moving past border sends player to border on opposite side
 -Make mobile friendly
+-Make sure everything shows up properly on mobile
 -Walls or something
 -Fix player name being off-center
 -Fix potato hit effect showing when the game starts, and when each round starts
@@ -39,4 +39,4 @@
 -Powerups that randomly spawn (should last for a short time)
     >Super speed
     >Other powerups here
--Make all indentation of server.js 4
+-Try, catch, finally stuff for when stuff can break the game

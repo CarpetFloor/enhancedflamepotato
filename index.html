@@ -2,22 +2,6 @@
     NOTE: To make pixel art not blurry and large enough, increase the sprite size
     in Aseprite with Nearest-Neighbor
 
-    Assets Used:
-    -Colors: https://htmlcolorcodes.com/color-chart/
-    -Players: https://0x72.itch.io/16x16-dungeon-tileset
-    -Halloween players: https://franuka.itch.io/fantasy-rpg-halloween-pack
-    -Potato: https://henrysoftware.itch.io/pixel-food
-    -Flame: https://brullov.itch.io/fire-animation
-    -Potato Hit Impact EFfect: https://untiedgames.itch.io/five-free-pixel-explosions
-    -Explosion: https://nyknck.itch.io/explosion
-    -Font: https://fonts.google.com/specimen/Press+Start+2P?category=Display,Monospace#standard-styles
-    -Skill Icons: https://pixerelia.itch.io/vas-basic-spells-and-buffs
-    -Map1: https://o-lobster.itch.io/simple-dungeon-crawler-16x16-pixel-pack
-    -Map2: https://scut.itch.io/7drl-tileset-2018
-    -Text Icons: https://coolsymbol.com/
-    -Mobile Control Buttons: https://kenney.nl/assets/onscreen-controls
-    -Mobile Joystick: https://github.com/bobboteck/JoyStick
-
     Help Used:
     -Mouse pos: https://stackoverflow.com/questions/43853119/javascript-wrong-mouse-position-when-drawing-on-canvas
     -Test for mobile: https://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device
@@ -80,6 +64,7 @@
             <button onclick="joinLobbyMenu()" class="menuButton">Join Game</button>
             <button onclick="settings()" class="menuButton">Player</button>
             <button onclick="tutorial()" class="menuButton">Tutorial</button>
+            <button onclick="credits()" class="menuButton">Credits</button>
         </div>
 
         <div class="menu" id="settings">
@@ -167,6 +152,78 @@
                 corner of the screen.
             </p>
             <button onclick="backToMainMenu()" class="menuButton">Main Menu</button>
+        </div>
+
+        <div class="menu" id="credits">
+            <div id="creditsDiv">
+                <p id="creditsText">The following are links</p>
+
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://0x72.itch.io/16x16-dungeon-tileset">
+                Players</a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://franuka.itch.io/fantasy-rpg-halloween-pack">
+                Halloween players</a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://henrysoftware.itch.io/pixel-food">
+                Potato
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://brullov.itch.io/fire-animation">
+                Flame
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://untiedgames.itch.io/five-free-pixel-explosions">
+                Potato Hit Impact EFfect
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://nyknck.itch.io/explosion">
+                Explosion
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://fonts.google.com/specimen/VT323?query=vt">
+                Font
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://pixerelia.itch.io/vas-basic-spells-and-buffs">
+                Skill Icons
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://o-lobster.itch.io/simple-dungeon-crawler-16x16-pixel-pack">
+                Map1
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://scut.itch.io/7drl-tileset-2018">
+                Map2
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://coolsymbol.com/">
+                Text Icons
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://kenney.nl/assets/onscreen-controls">
+                Mobile Control Buttons
+                </a>
+                
+                <a id="creditsLink" target="_blank" rel="noopener noreferrer"
+                href="https://github.com/bobboteck/JoyStick">
+                Mobile Joystick
+                </a>
+                
+                <button id="creditsMainMenuButton" 
+                onclick="backToMainMenu()" class="menuButton">Main Menu</button>
+            </div>
         </div>
 
         <div id="joystickContainer"></div>

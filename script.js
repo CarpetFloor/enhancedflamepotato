@@ -58,6 +58,15 @@ function tutorial() {
     document.body.style.overflow = "auto";
 }
 
+function credits() {
+    document.getElementById("mainMenu").style.visibility = "hidden";
+    document.getElementById("menuSubText").style.visibility = 
+    "hidden";
+
+    document.getElementById("credits").style.visibility = "visible";
+    document.body.style.overflow = "auto";
+}
+
 // successfully joined lobby, so change menu to lobby meny
 socket.on("joined lobby", () => {
     document.getElementById("mainMenu").style.visibility = "visible";
@@ -155,6 +164,7 @@ function backToMainMenu() {
     document.getElementById("join").style.visibility = "hidden";
     document.getElementById("lobby").style.visibility = "hidden";
     document.getElementById("tutorial").style.visibility = "hidden";
+    document.getElementById("credits").style.visibility = "hidden";
     document.getElementById("gameOverText").style.visibility = "hidden";
 
     socket.emit("go back to main lobby", id, lobby);
