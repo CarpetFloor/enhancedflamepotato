@@ -349,15 +349,29 @@ function Potato() {
                     }
                 }
                 
-                // if potato ever gets outside of the screen, move potato back in
-                if(this.x < 0)
-                this.x = 0;
-                if(this.x > w)
-                this.x = w;
-                if(this.y < 0)
-                this.y = 0;
-                if(this.y > h)
-                this.y = h;
+                // // if potato ever gets outside of the screen, move potato back in
+                // if(this.x < 0)
+                // this.x = 0;
+                // if(this.x > w)
+                // this.x = w;
+                // if(this.y < 0)
+                // this.y = 0;
+                // if(this.y > h)
+                // this.y = h;
+                
+                // if potato goes out of bounds, move to other side of map, 
+                // like how players can move from one side of the map to the other
+                let acrossMapMoveAdjustment = 5;
+
+                if(this.x <= 0)
+                    this.x = w - acrossMapMoveAdjustment;
+                else if(this.x >= w)
+                    this.x = acrossMapMoveAdjustment;
+                
+                if(this.y <= 0)
+                    this.y = h - acrossMapMoveAdjustment;
+                else if(this.y >= h)
+                    this.y = acrossMapMoveAdjustment;
             }
 };
 
