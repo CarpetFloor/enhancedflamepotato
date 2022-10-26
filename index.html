@@ -69,9 +69,13 @@
 
         <div class="menu" id="settings">
             <p id="currentName" class="customizationText">Name: nothing</p>
-            <input id="nameInput" class="inputInput" type="text" placeholder="Name">
-            <button onclick="changeName()" class="menuButton">Change Name</button>
-            <button onclick="backToMainMenu()" class="menuButton">Main Menu</button>
+            <div id="settingsDiv">
+                <input id="nameInput" class="inputInput" type="text" placeholder="Name">
+                <button id="changeNameButton" 
+                onclick="changeName()" class="menuButton">Change Name</button>
+                <button id="settingBackToMainMenuButton" 
+                onclick="backToMainMenu()" class="menuButton">Main Menu</button>
+            </div>
         </div>
 
         <div class="menu" id="join">

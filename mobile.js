@@ -180,6 +180,23 @@ function setMobileView() {
         "margin":"0"
     });
 
+    // move buttons beneath name change input to the left and right of input
+    $("#settingsDiv").css({
+        "flex-direction":"row"
+    });
+    // following 3 make input in the middle
+    $("#settingBackToMainMenuButton").css({
+        "order":1,
+        "width":250
+    });
+    $("#nameInput").css({
+        "order":2
+    });
+    $("#changeNameButton").css({
+        "order":3,
+        "width":250
+    });
+
     // lobby
     // make layout horizontal
     $("#lobby").css({

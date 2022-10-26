@@ -193,6 +193,10 @@ a:link, a:visited, a:active {
 a:hover {
     color: #eb984e;
 }
+#settingsDiv {
+    display: flex;
+    flex-direction: column;
+}
 #creditsDiv {
     display: flex;
     flex-direction: column;

@@ -21,6 +21,13 @@ socket.on("connected", (name)=> {
     }
 });
 
+socket.on("mobile start error", () => {
+    window.alert("There was an issue. Please close and open this again." + 
+    "Actually, don't worry, this will close for you");
+
+    window.close();
+});
+
 function showLobby() {
     document.getElementById("mainMenu").style.visibility = "hidden";
     document.getElementById("menuSubText").style.visibility = 
@@ -118,13 +125,19 @@ function settings() {
 function changeName() {
     tryingToSetName = true;
     nameAttempt = document.getElementById("nameInput").value;
+    let nameAttemptLength = nameAttempt.length;
+    let maxLength = 20;
 
-    if(nameAttempt.length < 21) {
+    if((nameAttemptLength > 0) && (nameAttemptLength < maxLength)) {
         socket.emit("get all player names");
     }
     else {
         tryingToSetName = false;
-        window.alert("name too long. Must be less than 21 characters!");
+
+        if(nameAttemptLength > maxLength)
+            window.alert("name too long. Must be less than 21 characters!");
+        else
+            window.alert("name too short. Must be at least 1 character!");
     }
 }
 

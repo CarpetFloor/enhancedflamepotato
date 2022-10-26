@@ -669,7 +669,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on("player is mobile", (id) => {
-        users[getUserPos(id)].mobile = true;
+        try {
+            users[getUserPos(id)].mobile = true;
+        }
+        catch(exception) {
+            // since the error happens right when the 
+            // player loads the page, they would be in main lobby
+            io.to("0").emit("mobile start error");
+        }
     });
 });
 
