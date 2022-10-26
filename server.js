@@ -787,7 +787,9 @@ function gameMapData(lobby) {
         maxDashWaitFrame: maxDashWaitFrame,
         map: {
             size: mapSize,
-            data: []
+            data: [],
+            decorationsData: [],
+            obstaclesData: []
         },
         canvas: {
             w: w,
@@ -822,9 +824,26 @@ function gameMapData(lobby) {
         
         data.map.data.push(currentRow);
     }
+
+    let border = 50;
+    let minDecorations = 5;
+    let maxDecorations = 20;
+    let numDecorations = Math.ceil(
+        (Math.random() * (maxDecorations - minDecorations)) + minDecorations);
+    for(let i = 0; i < numDecorations; i++) {
+        let decoration = {
+            tile: Math.floor(Math.random() * 2),
+            x: Math.floor((Math.random() * (data.canvas.w - border)) +
+            border),
+            y: Math.floor((Math.random() * (data.canvas.h - border)) +
+            border)
+        }
+
+        data.map.decorationsData.push(decoration);
+    }
     
     // player pos
-    let border = 200;
+    border = 200;
     for (let i = 0; i < lobbies[lobby].length; i++) {
         lobbies[lobby][0].x = Math.floor((Math.random() * (data.canvas.w - border)) +
         border);

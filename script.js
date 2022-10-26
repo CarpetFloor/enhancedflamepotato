@@ -334,9 +334,42 @@ let map = {
         document.getElementById("noticeText").style.visibility = "hidden";
         mapLoaded = true;
         
-        startGame();
+        decorations.show();
     }
 }; map.loadImage();
+
+let decorations = {
+    img: new Image(),
+    width: 32,
+    height: 32,
+    frame: 0,
+    data: [],
+    loadImage: function() {
+        decorations.img.src = "Assets/Decorations.png";
+    },
+    show: function() {
+        for(let i = 0; i < decorations.data.length; i++) {
+            decorations.frame = decorations.data[i].tile;
+            console.log("drawing decoration");
+            console.log(decorations.data[i]);
+
+            mapR.drawImage(
+                decorations.img,// image
+                (decorations.frame * decorations.width),// clipping x start
+                // there are 4 frames of animation per skin
+                0,//clipYStart,// clipping y start
+                decorations.width,// width of clipping
+                decorations.height,// height of clipping
+                decorations.data[i].x - (decorations.width / 2),// x position
+                decorations.data[i].y - (decorations.height / 2),// y position
+                decorations.width * 1.5,// width of image
+                decorations.height * 1.5// height of image
+            );
+        }
+
+        startGame();
+    }
+}; decorations.loadImage();
 
 let flame = {
     img: new Image(),
@@ -405,6 +438,8 @@ socket.on("game started", (init) => {
 
     map.size = init.map.size; 
     map.mapData = init.map.data;
+
+    decorations.data = init.map.decorationsData;
 
     uiData.time.width = w / 2;
     uiData.dash.y = h - 130;
