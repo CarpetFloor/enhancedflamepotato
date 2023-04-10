@@ -1,5 +1,5 @@
 # Enhanced Flame Potato
-Better networking and more content version of multiplayer browser game flamepotato.
+Better networking version of [flamepotato](https://github.com/CarpetFloor/flamepotato). Also, more content will be added that is not in the original.
 <br /><br />
 Note that this exists to create a separate version of the changes that will be made to the original
 source code to create to help create a different development environment. While branches could have 
