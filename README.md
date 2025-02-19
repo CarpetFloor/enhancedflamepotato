@@ -1,7 +1,4 @@
 # Enhanced Flame Potato
-<br />
-Currently hosted on www.flamepotato.net
-<br /><br />
 Better networking version of https://github.com/CarpetFloor/flamepotato. Also, more content will be added that is not in the original.
 <br /><br />
 Note that this exists to create a separate version of the changes that will be made to the original
